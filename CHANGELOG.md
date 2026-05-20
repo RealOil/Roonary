@@ -25,3 +25,6 @@ Removed: removed scope or files
 - Added initial git ignore rules for Expo/React Native development.
 - Added repository README and docs index.
 - Organized planning documents under `docs/`.
+- Added Expo/React Native app scaffold.
+- Added MVP 1 app shell with onboarding, recommendation, My Room, routine, replay, closet, and archive screens.
+- Added mock data, data types, and theme tokens for the first prototype.

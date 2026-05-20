@@ -1,5 +1,6 @@
 # dependencies
 node_modules/
+.tools/
 .pnp/
 .pnp.js
 
@@ -31,4 +32,3 @@ pnpm-debug.log*
 Thumbs.db
 .vscode/
 .idea/
-

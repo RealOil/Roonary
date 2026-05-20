@@ -29,9 +29,40 @@ Start here:
 ## Current Status
 
 ```text
-Stage: Planning
+Stage: MVP 1 app scaffold
 Target MVP: Mobile-first React Native + Expo app
 Backend: Not used in MVP 1
 Data: Mock/local data for MVP 1
 ```
 
+---
+
+## Run Locally
+
+Prerequisite:
+
+```text
+Node.js LTS with npm
+```
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the Expo dev server:
+
+```bash
+npm run start
+```
+
+Then open the app with Expo Go by scanning the QR code.
+
+Useful checks:
+
+```bash
+npm run typecheck
+npm run android
+npm run web
+```
