@@ -146,10 +146,10 @@ Shared Room, 링크 초대, Group Replay는 MVP 2로 미룬다.
 산출물:
 
 ```text
-routine-room-prd.md
-development-strategy.md
-mvp1-spec.md
-screen-flow.md
+docs/product/prd.md
+docs/product/mvp1-spec.md
+docs/product/screen-flow.md
+docs/project/development-strategy.md
 ```
 
 목표:
@@ -261,4 +261,3 @@ Daily Replay 화면에서 하루 요약을 본다.
 ```
 
 이 버전은 완성 앱이 아니라 **제품 감각 검증용 앱**이다.
-

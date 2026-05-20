@@ -360,4 +360,3 @@ Daily Replay는 감성 에세이가 아니라 기록물처럼 보여야 한다.
 Closet과 Archive는 MVP 1에서 기능보다 확장 가능성을 보여주는 자리다.
 Shared Room은 MVP 1 화면 흐름에 넣지 않는다.
 ```
-

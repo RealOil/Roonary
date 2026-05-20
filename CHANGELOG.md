@@ -23,4 +23,5 @@ Removed: removed scope or files
 - Added MVP 1 screen flow.
 - Added project changelog.
 - Added initial git ignore rules for Expo/React Native development.
-
+- Added repository README and docs index.
+- Organized planning documents under `docs/`.

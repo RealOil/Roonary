@@ -251,7 +251,7 @@ Shared Room is not accidentally implemented in MVP 1.
 ## 7. Suggested First Codex Prompt
 
 ```text
-Read routine-room-prd.md, development-strategy.md, mvp1-spec.md, screen-flow.md, data-model.md, and implementation-plan.md.
+Read docs/product/prd.md, docs/product/mvp1-spec.md, docs/product/screen-flow.md, docs/project/development-strategy.md, docs/project/implementation-plan.md, and docs/technical/data-model.md.
 
 Create a React Native + Expo + TypeScript MVP 1 app for Roonary.
 
@@ -260,4 +260,3 @@ Do not implement backend, auth, Shared Room, invite links, or real persistence.
 
 After creating the app shell, run the project check command and tell me how to open it with Expo Go.
 ```
-
