@@ -49,3 +49,4 @@ Removed: removed scope or files
 - Changed My Room and room customization preview from flat room blocks to a simple 2.5D corner-room composition.
 - Documented future layered PNG/WebP asset direction for room, character, outfit, prop, and routine object graphics.
 - Documented product direction toward recurring routines, schedules/calendar, focus sessions, and future widgets.
+- Changed the Routine screen into a Today screen with focus session, daily schedule, widget preview, and Today Log sections.

@@ -9,7 +9,7 @@
 Onboarding
 Recommendation Result
 My Room
-Routine / Today Log
+Today
 Closet Placeholder
 Archive Placeholder
 ```
@@ -46,7 +46,7 @@ MVP 1의 하단 네비게이션은 다음 구조를 권장한다.
 
 ```text
 Room
-Routine
+Today
 Closet
 Archive
 ```
@@ -55,8 +55,8 @@ Shared 탭은 MVP 2에서 추가한다.
 
 ```mermaid
 flowchart LR
-  Room["Room / My Room"] --- Routine["Routine"]
-  Routine --- Closet["Closet"]
+  Room["Room / My Room"] --- Today["Today"]
+  Today --- Closet["Closet"]
   Closet --- Archive["Archive"]
 ```
 
@@ -66,7 +66,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-  A["My Room"] --> B["Routine / Today Log"]
+  A["My Room"] --> B["Today"]
   B --> A
   A --> E["Closet Placeholder"]
   E --> A
@@ -79,7 +79,7 @@ My Room은 MVP 1의 홈 화면이다.
 My Room에서 가능한 이동:
 
 ```text
-루틴 및 오늘 로그 확인
+오늘 루틴/일정 및 로그 확인
 Closet placeholder 확인
 Archive placeholder 확인
 ```
@@ -171,20 +171,23 @@ Open Archive
 
 ---
 
-### 5.4 Routine / Today Log
+### 5.4 Today
 
 진입:
 
 ```text
-하단 Routine 탭
+하단 Today 탭
 ```
 
 표시 정보:
 
 ```text
 루틴 프리셋 목록
+오늘 일정 목록
+현재 집중 루틴
 선택 여부
 현재 루틴 여부
+위젯 미리보기
 Routine Summary
 Generated Frames
 Room/Focus/Wellness/Creativity stats

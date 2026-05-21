@@ -81,6 +81,12 @@ const onboardingQuestions = [
   },
 ];
 
+const todayScheduleItems = [
+  { id: 'schedule-standup', time: '10:30', title: '팀 체크인', type: '일정' },
+  { id: 'schedule-walk', time: '16:00', title: '짧은 산책', type: '루틴' },
+  { id: 'schedule-wrap', time: '21:30', title: '하루 정리', type: '루틴' },
+];
+
 export default function App() {
   const [screen, setScreen] = useState<ScreenName>('onboarding');
   const [hydrated, setHydrated] = useState(false);
@@ -236,7 +242,7 @@ export default function App() {
             />
           )}
           {screen === 'routine' && (
-            <RoutineScreen
+            <TodayScreen
               currentRoutineId={currentRoutineId}
               onSelectRoutine={selectCurrentRoutine}
               frames={frames}
@@ -396,7 +402,7 @@ function RoomScreen({
   );
 }
 
-function RoutineScreen({
+function TodayScreen({
   currentRoutineId,
   onSelectRoutine,
   frames,
@@ -418,39 +424,78 @@ function RoutineScreen({
 
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>루틴</Text>
-      <Text style={styles.heroTitle}>오늘 방에 보여줄 루틴을 골라주세요.</Text>
-      {routinePresets.map((routine) => {
-        const selected = routine.id === currentRoutineId;
-        return (
-          <Pressable
-            key={routine.id}
-            style={[styles.selectRow, selected && styles.selectRowActive]}
-            onPress={() => onSelectRoutine(routine.id)}
-          >
-            <View>
-              <Text style={styles.cardTitle}>{routine.title}</Text>
-              <Text style={styles.subtleText}>{routine.estimatedMinutes}분 프리셋</Text>
+      <Text style={styles.kicker}>오늘</Text>
+      <Text style={styles.heroTitle}>오늘의 루틴과 일정을 방에 올려둘게요.</Text>
+      <View style={styles.panel}>
+        <View style={styles.sectionHeader}>
+          <View>
+            <Text style={styles.panelTitle}>지금 집중</Text>
+            <Text style={styles.subtleText}>현재 방에 반영되는 루틴</Text>
+          </View>
+          <View style={styles.statusBadge}>
+            <Text style={styles.statusText}>{statusLabel(currentRoutine.status)}</Text>
+          </View>
+        </View>
+        <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
+        <View style={styles.buttonRow}>
+          <SecondaryButton
+            label={`${currentRoutine.title} 프레임 생성`}
+            onPress={onGenerateFrame}
+          />
+          <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
+        </View>
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>오늘 루틴</Text>
+        {routinePresets.map((routine) => {
+          const selected = routine.id === currentRoutineId;
+          return (
+            <Pressable
+              key={routine.id}
+              style={[styles.selectRow, selected && styles.selectRowActive]}
+              onPress={() => onSelectRoutine(routine.id)}
+            >
+              <View>
+                <Text style={styles.cardTitle}>{routine.title}</Text>
+                <Text style={styles.subtleText}>{routine.estimatedMinutes}분 프리셋</Text>
+              </View>
+              <Text style={selected ? styles.selectedText : styles.subtleText}>
+                {selected ? '현재 집중' : statusLabel(routine.status)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>오늘 일정</Text>
+        {todayScheduleItems.map((item) => (
+          <View key={item.id} style={styles.scheduleRow}>
+            <Text style={styles.scheduleTime}>{item.time}</Text>
+            <View style={styles.scheduleTextBlock}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.subtleText}>{item.type}</Text>
             </View>
-            <Text style={selected ? styles.selectedText : styles.subtleText}>
-              {selected ? '현재 선택' : statusLabel(routine.status)}
-            </Text>
-          </Pressable>
-        );
-      })}
+          </View>
+        ))}
+      </View>
+
+      <View style={styles.widgetPreview}>
+        <View>
+          <Text style={styles.widgetKicker}>위젯 미리보기</Text>
+          <Text style={styles.widgetTitle}>{currentRoutine.title}</Text>
+          <Text style={styles.subtleText}>다음: {todayScheduleItems[0].time} {todayScheduleItems[0].title}</Text>
+        </View>
+        <View style={styles.widgetRoomDot} />
+      </View>
+
       <PrimaryButton label="내 방으로 돌아가기" onPress={onDone} />
 
       <View style={styles.sectionDivider} />
 
       <Text style={styles.kicker}>오늘 로그</Text>
       <Text style={styles.sectionTitle}>{dailyReplay.date}</Text>
-      <View style={styles.buttonRow}>
-        <SecondaryButton
-          label={`${currentRoutine.title} 프레임 생성`}
-          onPress={onGenerateFrame}
-        />
-        <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
-      </View>
       <View style={styles.statsGrid}>
         <StatCard label="방 EXP" value={`+${replayStats.roomExp}`} />
         <StatCard label="집중" value={`+${replayStats.focus}`} />
@@ -921,7 +966,7 @@ function BottomNav({
 }) {
   const items: { label: string; screen: ScreenName }[] = [
     { label: '방', screen: 'room' },
-    { label: '루틴', screen: 'routine' },
+    { label: '오늘', screen: 'routine' },
     { label: '옷장', screen: 'closet' },
     { label: '아카이브', screen: 'archive' },
   ];
@@ -1240,7 +1285,7 @@ function screenTitle(screen: ScreenName) {
     onboarding: '온보딩',
     recommendation: '추천 결과',
     room: '내 방',
-    routine: '루틴',
+    routine: '오늘',
     closet: '옷장',
     archive: '아카이브',
   };
@@ -1470,6 +1515,19 @@ const styles = StyleSheet.create({
   roomRoutineText: {
     color: colors.ink,
     fontSize: 15,
+    fontWeight: '900',
+  },
+  statusBadge: {
+    backgroundColor: '#EEF3EA',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  statusText: {
+    color: colors.green,
+    fontSize: 12,
     fontWeight: '900',
   },
   roomScene: {
@@ -1762,6 +1820,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: spacing.md,
   },
   sectionTitle: {
     color: colors.ink,
@@ -2154,6 +2213,51 @@ const styles = StyleSheet.create({
     color: colors.ink,
     fontSize: 15,
     fontWeight: '800',
+  },
+  scheduleRow: {
+    alignItems: 'center',
+    borderTopColor: colors.line,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.md,
+    paddingTop: spacing.md,
+  },
+  scheduleTime: {
+    color: colors.blue,
+    fontSize: 14,
+    fontWeight: '900',
+    width: 54,
+  },
+  scheduleTextBlock: {
+    flex: 1,
+  },
+  widgetPreview: {
+    alignItems: 'center',
+    backgroundColor: colors.ink,
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    padding: spacing.lg,
+  },
+  widgetKicker: {
+    color: '#BFD7B5',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  widgetTitle: {
+    color: colors.panel,
+    fontSize: 20,
+    fontWeight: '900',
+    marginVertical: spacing.xs,
+  },
+  widgetRoomDot: {
+    backgroundColor: colors.green,
+    borderColor: colors.panel,
+    borderRadius: 22,
+    borderWidth: 3,
+    height: 44,
+    width: 44,
   },
   frameRow: {
     alignItems: 'center',

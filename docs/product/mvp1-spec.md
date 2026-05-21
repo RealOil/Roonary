@@ -64,7 +64,7 @@ Routine-based character state
 Seed Setlog Frame list
 Manual Setlog Frame generation
 Daily Replay
-Routine / Today Log combined screen
+Today screen with routine, schedule, widget preview, and log
 Closet placeholder
 Archive placeholder
 ```
@@ -108,7 +108,7 @@ Group Replay
 -> 오늘의 루틴 선택
 -> 현재 루틴 선택 또는 시작
 -> My Room에서 방 장면 확인
--> Routine 화면에서 Setlog Frame 목록과 오늘 로그 확인
+-> Today 화면에서 Setlog Frame 목록과 오늘 로그 확인
 -> Closet/Archive placeholder 확인
 ```
 
@@ -117,8 +117,8 @@ Group Replay
 ```text
 앱 실행
 -> My Room
--> Routine 화면에서 오늘의 루틴 확인/수정
--> Routine 화면에서 오늘 로그 확인
+-> Today 화면에서 오늘의 루틴/일정 확인
+-> Today 화면에서 오늘 로그 확인
 ```
 
 ---
@@ -186,7 +186,7 @@ MVP 제약:
 상단: 날짜, 현재 시간, 현재 루틴
 중앙: 화면을 크게 차지하는 2.5D 코너룸 장면
 장면 내부: 작은 동물 캐릭터와 루틴별 소품
-하단 네비게이션: Room, Routine, Closet, Archive
+하단 네비게이션: Room, Today, Closet, Archive
 ```
 
 기능:
@@ -207,7 +207,7 @@ MVP 시각화:
 My Room에서는 루틴 목록과 프레임 목록보다 방 장면을 우선한다.
 My Room에는 감성 상태 문구, 루틴 목록, 프레임 목록, 액션 버튼을 두지 않는다.
 사용자가 켜놓고 집중할 수 있도록 방과 캐릭터를 중심에 둔다.
-루틴 목록, 프레임 목록, 오늘 로그는 Routine 화면에서 확인한다.
+루틴 목록, 일정, 프레임 목록, 오늘 로그는 Today 화면에서 확인한다.
 ```
 
 아트 에셋 방향:
@@ -223,12 +223,12 @@ Lottie/Rive 같은 애니메이션 에셋은 캐릭터 숨쉬기, 타이핑, 독
 
 ---
 
-### 5.3 Routine / Today Log
+### 5.3 Today
 
 목적:
 
 ```text
-사용자가 오늘 수행할 루틴을 프리셋에서 선택하고, 같은 화면에서 오늘 로그를 확인한다.
+사용자가 오늘 수행할 루틴과 일정을 확인하고, 같은 화면에서 현재 집중 세션과 오늘 로그를 확인한다.
 ```
 
 루틴 프리셋:
@@ -250,6 +250,8 @@ Rest
 여러 루틴 선택 가능
 선택된 루틴 저장
 현재 루틴 선택 가능
+오늘 일정 목록 표시
+위젯 미리보기 표시
 현재 루틴 기준 Setlog Frame 수동 생성
 오늘 로그 요약 표시
 생성된 Setlog Frame 목록 표시
