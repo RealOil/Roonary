@@ -116,3 +116,12 @@ export interface DailyReplay {
   stats: ReplayStats;
 }
 
+export interface RecommendationResult {
+  presetLabel: string;
+  animalLabel: string;
+  colorLabel: string;
+  roomThemeLabel: string;
+  roomTheme: RoomTheme;
+  routines: string[];
+  stateLabel: string;
+}

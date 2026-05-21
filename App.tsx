@@ -1,5 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -11,43 +12,189 @@ import {
 
 import {
   dailyReplay,
-  mockAvatar,
+  defaultRecommendation,
   mockRoom,
-  recommendation,
+  recommendationProfiles,
   routineLabels,
   routinePresets,
   setlogFrames,
 } from './src/data/mockData';
-import { Routine, ScreenName } from './src/models/types';
+import { RecommendationResult, Routine, ScreenName } from './src/models/types';
 import { colors, radius, spacing } from './src/theme/tokens';
+
+type OnboardingAnswerMap = Record<string, string>;
+
+interface PersistedAppState {
+  onboardingCompleted: boolean;
+  currentRoutineId: string;
+  onboardingAnswers: OnboardingAnswerMap;
+  recommendation: RecommendationResult;
+}
+
+const STORAGE_KEY = 'roonary:mvp1-state';
 
 const onboardingQuestions = [
   {
+    id: 'start',
     title: 'Start style',
     prompt: 'What feels best when the day begins?',
-    options: ['Quiet plan', 'Move first', 'Start together', 'Set the room'],
+    options: [
+      { id: 'planner', label: 'Quiet plan' },
+      { id: 'starter', label: 'Move first' },
+      { id: 'buddy', label: 'Start together' },
+      { id: 'cozy', label: 'Set the room' },
+    ],
   },
   {
+    id: 'space',
     title: 'Focus space',
     prompt: 'Where does focus feel easiest?',
-    options: ['Clean desk', 'Cozy room', 'Quiet cafe', 'Night studio'],
+    options: [
+      { id: 'planner', label: 'Clean desk' },
+      { id: 'cozy', label: 'Cozy room' },
+      { id: 'buddy', label: 'Quiet cafe' },
+      { id: 'deep', label: 'Night studio' },
+    ],
   },
   {
+    id: 'reset',
     title: 'Reset cue',
     prompt: 'What helps after a missed routine?',
-    options: ['Checkpoint', 'Soft break', 'Small reward', 'Room buddy'],
+    options: [
+      { id: 'planner', label: 'Checkpoint' },
+      { id: 'restorer', label: 'Soft break' },
+      { id: 'starter', label: 'Small reward' },
+      { id: 'buddy', label: 'Room buddy' },
+    ],
+  },
+  {
+    id: 'record',
+    title: 'Record style',
+    prompt: 'Which record would you most likely revisit?',
+    options: [
+      { id: 'planner', label: 'Clear timeline' },
+      { id: 'starter', label: 'Completion score' },
+      { id: 'cozy', label: 'Room scene' },
+      { id: 'buddy', label: 'Shared result' },
+    ],
+  },
+  {
+    id: 'firstRoutine',
+    title: 'First routine',
+    prompt: 'What should Roonary help with first?',
+    options: [
+      { id: 'deep', label: 'Work / study' },
+      { id: 'cozy', label: 'Reading' },
+      { id: 'restorer', label: 'Wellness' },
+      { id: 'planner', label: 'Plan / review' },
+    ],
   },
 ];
 
 export default function App() {
   const [screen, setScreen] = useState<ScreenName>('onboarding');
+  const [hydrated, setHydrated] = useState(false);
+  const [onboardingCompleted, setOnboardingCompleted] = useState(false);
+  const [onboardingAnswers, setOnboardingAnswers] = useState<OnboardingAnswerMap>({});
+  const [recommendation, setRecommendation] =
+    useState<RecommendationResult>(defaultRecommendation);
   const [currentRoutineId, setCurrentRoutineId] = useState('routine-code');
+
   const currentRoutine = useMemo(
     () => routinePresets.find((routine) => routine.id === currentRoutineId) ?? routinePresets[0],
     [currentRoutineId],
   );
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function hydrate() {
+      try {
+        const rawState = await AsyncStorage.getItem(STORAGE_KEY);
+        if (!mounted) {
+          return;
+        }
+
+        if (rawState) {
+          const saved = JSON.parse(rawState) as PersistedAppState;
+          setOnboardingCompleted(saved.onboardingCompleted);
+          setCurrentRoutineId(saved.currentRoutineId);
+          setOnboardingAnswers(saved.onboardingAnswers);
+          setRecommendation(saved.recommendation);
+          setScreen(saved.onboardingCompleted ? 'room' : 'onboarding');
+        }
+      } catch {
+        setScreen('onboarding');
+      } finally {
+        if (mounted) {
+          setHydrated(true);
+        }
+      }
+    }
+
+    hydrate();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const persist = async (nextState: PersistedAppState) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(nextState));
+  };
+
   const open = (nextScreen: ScreenName) => setScreen(nextScreen);
+
+  const selectAnswer = (questionId: string, optionId: string) => {
+    const nextAnswers = { ...onboardingAnswers, [questionId]: optionId };
+    setOnboardingAnswers(nextAnswers);
+    setRecommendation(buildRecommendation(nextAnswers));
+  };
+
+  const acceptRecommendation = async () => {
+    const nextState = {
+      onboardingCompleted: true,
+      currentRoutineId,
+      onboardingAnswers,
+      recommendation,
+    };
+    setOnboardingCompleted(true);
+    await persist(nextState);
+    open('room');
+  };
+
+  const selectCurrentRoutine = async (routineId: string) => {
+    setCurrentRoutineId(routineId);
+    if (onboardingCompleted) {
+      await persist({
+        onboardingCompleted,
+        currentRoutineId: routineId,
+        onboardingAnswers,
+        recommendation,
+      });
+    }
+  };
+
+  const resetOnboarding = async () => {
+    await AsyncStorage.removeItem(STORAGE_KEY);
+    setOnboardingCompleted(false);
+    setOnboardingAnswers({});
+    setRecommendation(defaultRecommendation);
+    setCurrentRoutineId('routine-code');
+    open('onboarding');
+  };
+
+  if (!hydrated) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <StatusBar style="dark" />
+        <View style={styles.loadingShell}>
+          <Text style={styles.brand}>Roonary</Text>
+          <Text style={styles.headerTitle}>Loading room...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -55,11 +202,20 @@ export default function App() {
       <View style={styles.appShell}>
         <Header screen={screen} onHome={() => open('room')} />
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-          {screen === 'onboarding' && <OnboardingScreen onDone={() => open('recommendation')} />}
-          {screen === 'recommendation' && <RecommendationScreen onAccept={() => open('room')} />}
+          {screen === 'onboarding' && (
+            <OnboardingScreen
+              answers={onboardingAnswers}
+              onSelectAnswer={selectAnswer}
+              onDone={() => open('recommendation')}
+            />
+          )}
+          {screen === 'recommendation' && (
+            <RecommendationScreen recommendation={recommendation} onAccept={acceptRecommendation} />
+          )}
           {screen === 'room' && (
             <RoomScreen
               currentRoutine={currentRoutine}
+              recommendation={recommendation}
               onRoutinePress={() => open('routine')}
               onReplayPress={() => open('replay')}
               onFramePress={() => open('replay')}
@@ -68,13 +224,25 @@ export default function App() {
           {screen === 'routine' && (
             <RoutineScreen
               currentRoutineId={currentRoutineId}
-              onSelectRoutine={setCurrentRoutineId}
+              onSelectRoutine={selectCurrentRoutine}
               onDone={() => open('room')}
             />
           )}
           {screen === 'replay' && <ReplayScreen />}
-          {screen === 'closet' && <PlaceholderScreen title="Closet" />}
-          {screen === 'archive' && <PlaceholderScreen title="Archive" />}
+          {screen === 'closet' && (
+            <PlaceholderScreen
+              title="Closet"
+              recommendation={recommendation}
+              onReset={resetOnboarding}
+            />
+          )}
+          {screen === 'archive' && (
+            <PlaceholderScreen
+              title="Archive"
+              recommendation={recommendation}
+              onReset={resetOnboarding}
+            />
+          )}
         </ScrollView>
         {screen !== 'onboarding' && screen !== 'recommendation' && (
           <BottomNav current={screen} onNavigate={open} />
@@ -102,40 +270,73 @@ function Header({ screen, onHome }: { screen: ScreenName; onHome: () => void }) 
   );
 }
 
-function OnboardingScreen({ onDone }: { onDone: () => void }) {
+function OnboardingScreen({
+  answers,
+  onSelectAnswer,
+  onDone,
+}: {
+  answers: OnboardingAnswerMap;
+  onSelectAnswer: (questionId: string, optionId: string) => void;
+  onDone: () => void;
+}) {
+  const answeredCount = Object.keys(answers).length;
+  const canContinue = answeredCount === onboardingQuestions.length;
+
   return (
     <View style={styles.stack}>
       <Text style={styles.kicker}>MVP 1 onboarding</Text>
       <Text style={styles.heroTitle}>Find the first room shape for your routine.</Text>
       <Text style={styles.bodyText}>
-        This draft keeps onboarding light: answer a few routine-style prompts, then accept a
-        simple character and room recommendation.
+        Pick one option per prompt. The first MVP uses these choices to recommend a character,
+        room theme, and starting routine set.
       </Text>
       {onboardingQuestions.map((question) => (
-        <View key={question.title} style={styles.panel}>
-          <Text style={styles.panelTitle}>{question.title}</Text>
+        <View key={question.id} style={styles.panel}>
+          <View style={styles.questionHeader}>
+            <Text style={styles.panelTitle}>{question.title}</Text>
+            <Text style={styles.subtleText}>{answers[question.id] ? 'Selected' : 'Required'}</Text>
+          </View>
           <Text style={styles.bodyText}>{question.prompt}</Text>
           <View style={styles.optionGrid}>
-            {question.options.map((option) => (
-              <View key={option} style={styles.optionPill}>
-                <Text style={styles.optionText}>{option}</Text>
-              </View>
-            ))}
+            {question.options.map((option) => {
+              const selected = answers[question.id] === option.id;
+              return (
+                <Pressable
+                  key={option.label}
+                  style={[styles.optionPill, selected && styles.optionPillActive]}
+                  onPress={() => onSelectAnswer(question.id, option.id)}
+                >
+                  <Text style={[styles.optionText, selected && styles.optionTextActive]}>
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
         </View>
       ))}
-      <PrimaryButton label="View recommendation" onPress={onDone} />
+      <PrimaryButton
+        disabled={!canContinue}
+        label={canContinue ? 'View recommendation' : `${answeredCount}/5 answered`}
+        onPress={onDone}
+      />
     </View>
   );
 }
 
-function RecommendationScreen({ onAccept }: { onAccept: () => void }) {
+function RecommendationScreen({
+  recommendation,
+  onAccept,
+}: {
+  recommendation: RecommendationResult;
+  onAccept: () => void;
+}) {
   return (
     <View style={styles.stack}>
       <Text style={styles.kicker}>Recommendation</Text>
       <Text style={styles.heroTitle}>{recommendation.presetLabel}</Text>
       <View style={styles.recommendationCard}>
-        <RoomIllustration routineLabel="Plan" />
+        <RoomIllustration routineLabel="Plan" recommendation={recommendation} />
         <MetricRow label="Animal" value={recommendation.animalLabel} />
         <MetricRow label="Base color" value={recommendation.colorLabel} />
         <MetricRow label="Room theme" value={recommendation.roomThemeLabel} />
@@ -148,11 +349,13 @@ function RecommendationScreen({ onAccept }: { onAccept: () => void }) {
 
 function RoomScreen({
   currentRoutine,
+  recommendation,
   onRoutinePress,
   onReplayPress,
   onFramePress,
 }: {
   currentRoutine: Routine;
+  recommendation: RecommendationResult;
   onRoutinePress: () => void;
   onReplayPress: () => void;
   onFramePress: () => void;
@@ -161,7 +364,7 @@ function RoomScreen({
     <View style={styles.stack}>
       <View style={styles.roomTopline}>
         <View>
-          <Text style={styles.kicker}>2026.05.20 Wed</Text>
+          <Text style={styles.kicker}>{formatTodayLabel()}</Text>
           <Text style={styles.heroTitle}>My Room</Text>
         </View>
         <View style={styles.statusBadge}>
@@ -169,12 +372,12 @@ function RoomScreen({
         </View>
       </View>
 
-      <RoomIllustration routineLabel={currentRoutine.title} />
+      <RoomIllustration routineLabel={currentRoutine.title} recommendation={recommendation} />
 
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>Current routine</Text>
         <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
-        <Text style={styles.bodyText}>{mockAvatar.currentStateLabel}</Text>
+        <Text style={styles.bodyText}>{recommendation.stateLabel}</Text>
         <View style={styles.buttonRow}>
           <SecondaryButton label="Set routine" onPress={onRoutinePress} />
           <SecondaryButton label="Daily Replay" onPress={onReplayPress} />
@@ -283,7 +486,15 @@ function ReplayScreen() {
   );
 }
 
-function PlaceholderScreen({ title }: { title: string }) {
+function PlaceholderScreen({
+  title,
+  recommendation,
+  onReset,
+}: {
+  title: string;
+  recommendation: RecommendationResult;
+  onReset: () => void;
+}) {
   const isCloset = title === 'Closet';
 
   return (
@@ -294,26 +505,35 @@ function PlaceholderScreen({ title }: { title: string }) {
         <Text style={styles.panelTitle}>{isCloset ? 'Current character' : 'Saved records'}</Text>
         <Text style={styles.bodyText}>
           {isCloset
-            ? 'Quiet Planner owl / moss green. Outfits and props are reserved for a later MVP.'
+            ? `${recommendation.presetLabel} ${recommendation.animalLabel} / ${recommendation.colorLabel}. Outfits and props are reserved for a later MVP.`
             : 'Today Daily Replay is visible here. Past replay filters are reserved for a later MVP.'}
         </Text>
       </View>
+      {isCloset && <SecondaryButton label="Reset onboarding" onPress={onReset} />}
     </View>
   );
 }
 
-function RoomIllustration({ routineLabel }: { routineLabel: string }) {
+function RoomIllustration({
+  routineLabel,
+  recommendation,
+}: {
+  routineLabel: string;
+  recommendation: RecommendationResult;
+}) {
+  const roomColor = roomThemeColor(recommendation.roomTheme);
+
   return (
-    <View style={styles.roomScene}>
-      <View style={styles.wallShelf} />
+    <View style={[styles.roomScene, { backgroundColor: roomColor.wall }]}>
+      <View style={[styles.wallShelf, { backgroundColor: roomColor.accent }]} />
       <View style={styles.windowBox} />
-      <View style={styles.desk}>
+      <View style={[styles.desk, { backgroundColor: roomColor.floor }]}>
         <View style={styles.monitor} />
         <View style={styles.cup} />
       </View>
       <View style={styles.avatar}>
-        <View style={styles.avatarHead} />
-        <View style={styles.avatarBody} />
+        <View style={[styles.avatarHead, { backgroundColor: roomColor.avatar }]} />
+        <View style={[styles.avatarBody, { backgroundColor: roomColor.avatarSoft }]} />
       </View>
       <View style={styles.plant}>
         <View style={styles.plantLeaf} />
@@ -321,7 +541,7 @@ function RoomIllustration({ routineLabel }: { routineLabel: string }) {
       </View>
       <Text style={styles.sceneCaption}>{routineLabel}</Text>
       <Text style={styles.sceneSubcaption}>
-        {mockRoom.theme.replace('_', ' ')} / {mockRoom.furnitureLabels.join(', ')}
+        {recommendation.roomThemeLabel} / {mockRoom.furnitureLabels.join(', ')}
       </Text>
     </View>
   );
@@ -360,9 +580,21 @@ function BottomNav({
   );
 }
 
-function PrimaryButton({ label, onPress }: { label: string; onPress: () => void }) {
+function PrimaryButton({
+  disabled = false,
+  label,
+  onPress,
+}: {
+  disabled?: boolean;
+  label: string;
+  onPress: () => void;
+}) {
   return (
-    <Pressable style={styles.primaryButton} onPress={onPress}>
+    <Pressable
+      disabled={disabled}
+      style={[styles.primaryButton, disabled && styles.primaryButtonDisabled]}
+      onPress={onPress}
+    >
       <Text style={styles.primaryButtonText}>{label}</Text>
     </Pressable>
   );
@@ -394,6 +626,69 @@ function StatCard({ label, value }: { label: string; value: string }) {
   );
 }
 
+function buildRecommendation(answers: OnboardingAnswerMap): RecommendationResult {
+  const scores = Object.values(answers).reduce<Record<string, number>>((acc, profileKey) => {
+    acc[profileKey] = (acc[profileKey] ?? 0) + 1;
+    return acc;
+  }, {});
+
+  const winningKey =
+    Object.entries(scores).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0]?.[0] ??
+    'planner';
+
+  return recommendationProfiles[winningKey] ?? defaultRecommendation;
+}
+
+function roomThemeColor(roomTheme: RecommendationResult['roomTheme']) {
+  const themes = {
+    clean_desk: {
+      wall: colors.wall,
+      floor: colors.floor,
+      accent: colors.green,
+      avatar: colors.green,
+      avatarSoft: '#AFC29F',
+    },
+    cozy_room: {
+      wall: '#EBD6C7',
+      floor: '#CFA88F',
+      accent: colors.coral,
+      avatar: colors.coral,
+      avatarSoft: '#DDA28C',
+    },
+    quiet_cafe: {
+      wall: '#D8E1DC',
+      floor: '#B7A17B',
+      accent: colors.blue,
+      avatar: colors.yellow,
+      avatarSoft: '#E0C875',
+    },
+    night_studio: {
+      wall: '#CED7DF',
+      floor: '#9BA9B6',
+      accent: colors.blue,
+      avatar: colors.blue,
+      avatarSoft: '#8CA3B5',
+    },
+    home_gym: {
+      wall: '#DDE4D4',
+      floor: '#B9C4A8',
+      accent: colors.green,
+      avatar: colors.green,
+      avatarSoft: '#B8C9A8',
+    },
+  };
+
+  return themes[roomTheme];
+}
+
+function formatTodayLabel() {
+  return new Intl.DateTimeFormat('en', {
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  }).format(new Date());
+}
+
 function screenTitle(screen: ScreenName) {
   const titles: Record<ScreenName, string> = {
     onboarding: 'Onboarding',
@@ -413,6 +708,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     backgroundColor: colors.paper,
+  },
+  loadingShell: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    width: '100%',
   },
   appShell: {
     flex: 1,
@@ -473,6 +774,12 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.lg,
   },
+  questionHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
   panelTitle: {
     color: colors.ink,
     fontSize: 16,
@@ -491,10 +798,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
+  optionPillActive: {
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
+  },
   optionText: {
     color: colors.ink,
     fontSize: 13,
     fontWeight: '700',
+  },
+  optionTextActive: {
+    color: colors.panel,
   },
   recommendationCard: {
     backgroundColor: colors.panel,
@@ -524,7 +838,6 @@ const styles = StyleSheet.create({
   },
   roomScene: {
     aspectRatio: 1.18,
-    backgroundColor: colors.wall,
     borderColor: colors.line,
     borderRadius: radius.md,
     borderWidth: 1,
@@ -533,7 +846,6 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   wallShelf: {
-    backgroundColor: colors.floor,
     height: 8,
     left: 26,
     position: 'absolute',
@@ -552,7 +864,6 @@ const styles = StyleSheet.create({
     width: 76,
   },
   desk: {
-    backgroundColor: colors.floor,
     borderRadius: radius.sm,
     bottom: 78,
     height: 54,
@@ -585,13 +896,11 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   avatarHead: {
-    backgroundColor: colors.green,
     borderRadius: 24,
     height: 48,
     width: 48,
   },
   avatarBody: {
-    backgroundColor: '#AFC29F',
     borderRadius: 18,
     height: 44,
     marginTop: -8,
@@ -643,6 +952,9 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+  },
+  primaryButtonDisabled: {
+    backgroundColor: colors.line,
   },
   primaryButtonText: {
     color: colors.panel,

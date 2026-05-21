@@ -6,6 +6,7 @@ import {
   RoutineType,
   SetlogFrame,
   User,
+  RecommendationResult,
 } from '../models/types';
 
 export const routineLabels: Record<RoutineType, string> = {
@@ -149,7 +150,7 @@ export const setlogFrames: SetlogFrame[] = [
 export const dailyReplay: DailyReplay = {
   id: 'replay-today',
   userId: mockUser.id,
-  date: '2026.05.20',
+  date: '2026.05.21',
   frameIds: setlogFrames.map((frame) => frame.id),
   routineSummary: [
     { routineType: 'plan', totalMinutes: 30, status: 'completed' },
@@ -166,11 +167,61 @@ export const dailyReplay: DailyReplay = {
   },
 };
 
-export const recommendation = {
+export const defaultRecommendation: RecommendationResult = {
   presetLabel: 'Quiet Planner',
   animalLabel: 'Owl',
   colorLabel: 'Moss green',
   roomThemeLabel: 'Clean desk',
+  roomTheme: 'clean_desk',
   routines: ['Plan', 'Code / Work', 'Review', 'Rest'],
+  stateLabel: 'Working at the desk with a small planner nearby.',
 };
 
+export const recommendationProfiles: Record<string, RecommendationResult> = {
+  planner: defaultRecommendation,
+  starter: {
+    presetLabel: 'Spark Starter',
+    animalLabel: 'Fox',
+    colorLabel: 'Warm coral',
+    roomThemeLabel: 'Quiet cafe',
+    roomTheme: 'quiet_cafe',
+    routines: ['Code / Work', 'Create', 'Workout', 'Rest'],
+    stateLabel: 'Ready to start fast with a bright desk setup.',
+  },
+  cozy: {
+    presetLabel: 'Cozy Finisher',
+    animalLabel: 'Rabbit',
+    colorLabel: 'Soft cream',
+    roomThemeLabel: 'Cozy room',
+    roomTheme: 'cozy_room',
+    routines: ['Read', 'Rest', 'Review', 'Plan'],
+    stateLabel: 'Settled into a soft corner and moving steadily.',
+  },
+  buddy: {
+    presetLabel: 'Room Buddy',
+    animalLabel: 'Hamster',
+    colorLabel: 'Honey yellow',
+    roomThemeLabel: 'Clean desk',
+    roomTheme: 'clean_desk',
+    routines: ['Plan', 'Code / Work', 'Read', 'Review'],
+    stateLabel: 'Keeping pace with a shared-room mindset.',
+  },
+  deep: {
+    presetLabel: 'Deep Worker',
+    animalLabel: 'Bear',
+    colorLabel: 'Slate blue',
+    roomThemeLabel: 'Night studio',
+    roomTheme: 'night_studio',
+    routines: ['Code / Work', 'Read', 'Review', 'Rest'],
+    stateLabel: 'Focused in a low-light work scene.',
+  },
+  restorer: {
+    presetLabel: 'Soft Restorer',
+    animalLabel: 'Cat',
+    colorLabel: 'Leaf green',
+    roomThemeLabel: 'Cozy room',
+    roomTheme: 'cozy_room',
+    routines: ['Rest', 'Workout', 'Review', 'Read'],
+    stateLabel: 'Balancing recovery and routine in a calm room.',
+  },
+};

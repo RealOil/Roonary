@@ -28,3 +28,6 @@ Removed: removed scope or files
 - Added Expo/React Native app scaffold.
 - Added MVP 1 app shell with onboarding, recommendation, My Room, routine, replay, closet, and archive screens.
 - Added mock data, data types, and theme tokens for the first prototype.
+- Added persisted MVP 1 state with AsyncStorage.
+- Added selectable onboarding answers that drive character and room recommendations.
+- Added persisted current routine selection.
