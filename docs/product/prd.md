@@ -171,7 +171,7 @@ Instead of asking users to simply choose a character appearance, Roonary should 
 MVP onboarding should be lightweight:
 
 ```text
-Length: Around 5 questions
+Length: 4 questions
 Output: Character preset, base color, first outfit/prop, room theme, recommended routine presets
 User control: Accept recommendation or change character/color/room theme
 ```
@@ -211,12 +211,6 @@ When a routine fails, what helps you most?
 - A low-pressure break
 - A small reward
 - Someone doing it with me
-
-Which daily record feels most useful?
-- A clear timeline
-- A short completion summary
-- A visual room scene
-- A shared result with others
 
 What kind of routine do you want help with first?
 - Work or study
@@ -1072,7 +1066,7 @@ Implement the MVP 1 personal experience for Roonary, a cozy productivity log gam
 
 Core requirements:
 1. The user has a default My Room. There is no personal room creation flow.
-2. Add a lightweight onboarding flow of about 5 questions that recommends a character preset, animal type, base color, room theme, and routine presets. The user can accept or adjust the recommendation.
+2. Add a lightweight onboarding flow of 4 questions that recommends a character preset, animal type, base color, room theme, and routine presets. The user can accept or adjust the recommendation.
 3. In My Room, the user can select today's routines from presets.
 4. The room view shows a small animal character whose state changes based on the selected/current routine.
 5. Use mock data to display a 1-hour Setlog Frame list.

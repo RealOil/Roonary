@@ -31,7 +31,7 @@ interface PersistedAppState {
   recommendation: RecommendationResult;
 }
 
-const STORAGE_KEY = 'roonary:mvp1-state-ko-v1';
+const STORAGE_KEY = 'roonary:mvp1-state-ko-v2';
 
 const onboardingQuestions = [
   {
@@ -65,17 +65,6 @@ const onboardingQuestions = [
       { id: 'restorer', label: '부담 없는 휴식' },
       { id: 'starter', label: '작은 보상' },
       { id: 'buddy', label: '같이 하는 사람' },
-    ],
-  },
-  {
-    id: 'record',
-    title: '기록 방식',
-    prompt: '나중에 다시 보고 싶은 기록은?',
-    options: [
-      { id: 'planner', label: '선명한 타임라인' },
-      { id: 'starter', label: '완료 요약' },
-      { id: 'cozy', label: '방 장면' },
-      { id: 'buddy', label: '공유 결과물' },
     ],
   },
   {
@@ -200,8 +189,11 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       <View style={styles.appShell}>
-        <Header screen={screen} onHome={() => open('room')} />
-        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {screen !== 'room' && <Header screen={screen} onHome={() => open('room')} />}
+        <ScrollView
+          contentContainerStyle={[styles.content, screen === 'room' && styles.roomContent]}
+          showsVerticalScrollIndicator={false}
+        >
           {screen === 'onboarding' && (
             <OnboardingScreen
               answers={onboardingAnswers}
@@ -218,7 +210,6 @@ export default function App() {
               recommendation={recommendation}
               onRoutinePress={() => open('routine')}
               onReplayPress={() => open('replay')}
-              onFramePress={() => open('replay')}
             />
           )}
           {screen === 'routine' && (
@@ -317,7 +308,7 @@ function OnboardingScreen({
       ))}
       <PrimaryButton
         disabled={!canContinue}
-        label={canContinue ? '추천 결과 보기' : `${answeredCount}/5 선택됨`}
+        label={canContinue ? '추천 결과 보기' : `${answeredCount}/4 선택됨`}
         onPress={onDone}
       />
     </View>
@@ -352,17 +343,21 @@ function RoomScreen({
   recommendation,
   onRoutinePress,
   onReplayPress,
-  onFramePress,
 }: {
   currentRoutine: Routine;
   recommendation: RecommendationResult;
   onRoutinePress: () => void;
   onReplayPress: () => void;
-  onFramePress: () => void;
 }) {
   return (
-    <View style={styles.stack}>
-      <View style={styles.roomTopline}>
+    <View style={styles.roomExperience}>
+      <RoomIllustration
+        routineLabel={currentRoutine.title}
+        recommendation={recommendation}
+        size="large"
+      />
+
+      <View style={styles.roomOverlayTop}>
         <View>
           <Text style={styles.kicker}>{formatTodayLabel()}</Text>
           <Text style={styles.heroTitle}>내 방</Text>
@@ -372,44 +367,17 @@ function RoomScreen({
         </View>
       </View>
 
-      <RoomIllustration routineLabel={currentRoutine.title} recommendation={recommendation} />
-
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>현재 루틴</Text>
-        <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
+      <View style={styles.roomDockOverlay}>
+        <View style={styles.roomDockText}>
+          <Text style={styles.kicker}>현재 루틴</Text>
+          <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
+        </View>
         <Text style={styles.bodyText}>{recommendation.stateLabel}</Text>
         <View style={styles.buttonRow}>
           <SecondaryButton label="루틴 설정" onPress={onRoutinePress} />
           <SecondaryButton label="데일리 리플레이" onPress={onReplayPress} />
         </View>
       </View>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>오늘의 루틴</Text>
-        <Text style={styles.subtleText}>{routinePresets.length}개 프리셋</Text>
-      </View>
-      <View style={styles.cardGrid}>
-        {routinePresets.map((routine) => (
-          <View key={routine.id} style={styles.routineCard}>
-            <Text style={styles.cardTitle}>{routine.title}</Text>
-            <Text style={styles.subtleText}>{statusLabel(routine.status)}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>셋로그 프레임</Text>
-        <Text style={styles.subtleText}>임시 데이터</Text>
-      </View>
-      {setlogFrames.slice(0, 3).map((frame) => (
-        <Pressable key={frame.id} style={styles.frameRow} onPress={onFramePress}>
-          <Text style={styles.frameTime}>{frame.timestamp}</Text>
-          <View style={styles.frameText}>
-            <Text style={styles.cardTitle}>{routineLabels[frame.routineType]}</Text>
-            <Text style={styles.subtleText}>{frame.sceneLabel}</Text>
-          </View>
-        </Pressable>
-      ))}
     </View>
   );
 }
@@ -517,32 +485,68 @@ function PlaceholderScreen({
 function RoomIllustration({
   routineLabel,
   recommendation,
+  size = 'normal',
 }: {
   routineLabel: string;
   recommendation: RecommendationResult;
+  size?: 'normal' | 'large';
 }) {
   const roomColor = roomThemeColor(recommendation.roomTheme);
 
   return (
-    <View style={[styles.roomScene, { backgroundColor: roomColor.wall }]}>
-      <View style={[styles.wallShelf, { backgroundColor: roomColor.accent }]} />
-      <View style={styles.windowBox} />
-      <View style={[styles.desk, { backgroundColor: roomColor.floor }]}>
-        <View style={styles.monitor} />
-        <View style={styles.cup} />
+    <View
+      style={[
+        styles.roomScene,
+        size === 'large' && styles.roomSceneLarge,
+        { backgroundColor: roomColor.wall },
+      ]}
+    >
+      <View
+        style={[
+          styles.wallShelf,
+          size === 'large' && styles.wallShelfLarge,
+          { backgroundColor: roomColor.accent },
+        ]}
+      />
+      <View style={[styles.windowBox, size === 'large' && styles.windowBoxLarge]} />
+      <View
+        style={[
+          styles.desk,
+          size === 'large' && styles.deskLarge,
+          { backgroundColor: roomColor.floor },
+        ]}
+      >
+        <View style={[styles.monitor, size === 'large' && styles.monitorLarge]} />
+        <View style={[styles.cup, size === 'large' && styles.cupLarge]} />
       </View>
-      <View style={styles.avatar}>
-        <View style={[styles.avatarHead, { backgroundColor: roomColor.avatar }]} />
-        <View style={[styles.avatarBody, { backgroundColor: roomColor.avatarSoft }]} />
+      <View style={[styles.avatar, size === 'large' && styles.avatarLarge]}>
+        <View
+          style={[
+            styles.avatarHead,
+            size === 'large' && styles.avatarHeadLarge,
+            { backgroundColor: roomColor.avatar },
+          ]}
+        />
+        <View
+          style={[
+            styles.avatarBody,
+            size === 'large' && styles.avatarBodyLarge,
+            { backgroundColor: roomColor.avatarSoft },
+          ]}
+        />
       </View>
-      <View style={styles.plant}>
-        <View style={styles.plantLeaf} />
-        <View style={styles.plantPot} />
+      <View style={[styles.plant, size === 'large' && styles.plantLarge]}>
+        <View style={[styles.plantLeaf, size === 'large' && styles.plantLeafLarge]} />
+        <View style={[styles.plantPot, size === 'large' && styles.plantPotLarge]} />
       </View>
-      <Text style={styles.sceneCaption}>{routineLabel}</Text>
-      <Text style={styles.sceneSubcaption}>
-        {recommendation.roomThemeLabel} / {mockRoom.furnitureLabels.join(', ')}
-      </Text>
+      {size !== 'large' && (
+        <>
+          <Text style={styles.sceneCaption}>{routineLabel}</Text>
+          <Text style={styles.sceneSubcaption}>
+            {recommendation.roomThemeLabel} / {mockRoom.furnitureLabels.join(', ')}
+          </Text>
+        </>
+      )}
     </View>
   );
 }
@@ -769,6 +773,11 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     paddingBottom: 104,
   },
+  roomContent: {
+    flexGrow: 1,
+    padding: 0,
+    paddingBottom: 70,
+  },
   stack: {
     gap: spacing.lg,
   },
@@ -847,6 +856,37 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.md,
   },
+  roomExperience: {
+    flex: 1,
+    minHeight: 650,
+    position: 'relative',
+  },
+  roomOverlayTop: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    left: spacing.lg,
+    position: 'absolute',
+    right: spacing.lg,
+    top: spacing.lg,
+    zIndex: 2,
+  },
+  roomDockOverlay: {
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    bottom: spacing.lg,
+    gap: spacing.md,
+    left: spacing.lg,
+    padding: spacing.lg,
+    position: 'absolute',
+    right: spacing.lg,
+    zIndex: 2,
+  },
+  roomDockText: {
+    gap: spacing.xs,
+  },
   statusBadge: {
     backgroundColor: '#EEF3EA',
     borderRadius: radius.sm,
@@ -868,12 +908,24 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     position: 'relative',
   },
+  roomSceneLarge: {
+    aspectRatio: undefined,
+    flex: 1,
+    minHeight: 650,
+    borderRadius: 0,
+    borderWidth: 0,
+  },
   wallShelf: {
     height: 8,
     left: 26,
     position: 'absolute',
     top: 44,
     width: 92,
+  },
+  wallShelfLarge: {
+    left: 48,
+    top: 118,
+    width: 132,
   },
   windowBox: {
     backgroundColor: '#C8D8D7',
@@ -886,6 +938,12 @@ const styles = StyleSheet.create({
     top: 32,
     width: 76,
   },
+  windowBoxLarge: {
+    height: 86,
+    right: 28,
+    top: 48,
+    width: 82,
+  },
   desk: {
     borderRadius: radius.sm,
     bottom: 78,
@@ -893,6 +951,12 @@ const styles = StyleSheet.create({
     left: 42,
     position: 'absolute',
     width: 156,
+  },
+  deskLarge: {
+    bottom: 268,
+    height: 72,
+    left: 58,
+    width: 190,
   },
   monitor: {
     backgroundColor: colors.blue,
@@ -903,6 +967,12 @@ const styles = StyleSheet.create({
     top: -24,
     width: 54,
   },
+  monitorLarge: {
+    height: 44,
+    left: 26,
+    top: -32,
+    width: 70,
+  },
   cup: {
     backgroundColor: colors.coral,
     borderRadius: 4,
@@ -912,16 +982,31 @@ const styles = StyleSheet.create({
     top: 14,
     width: 16,
   },
+  cupLarge: {
+    height: 22,
+    right: 28,
+    top: 18,
+    width: 20,
+  },
   avatar: {
     alignItems: 'center',
     bottom: 82,
     left: 176,
     position: 'absolute',
   },
+  avatarLarge: {
+    bottom: 274,
+    left: 214,
+  },
   avatarHead: {
     borderRadius: 24,
     height: 48,
     width: 48,
+  },
+  avatarHeadLarge: {
+    borderRadius: 32,
+    height: 64,
+    width: 64,
   },
   avatarBody: {
     borderRadius: 18,
@@ -929,11 +1014,21 @@ const styles = StyleSheet.create({
     marginTop: -8,
     width: 38,
   },
+  avatarBodyLarge: {
+    borderRadius: 22,
+    height: 58,
+    marginTop: -10,
+    width: 50,
+  },
   plant: {
     alignItems: 'center',
     bottom: 78,
     position: 'absolute',
     right: 34,
+  },
+  plantLarge: {
+    bottom: 278,
+    right: 46,
   },
   plantLeaf: {
     backgroundColor: colors.green,
@@ -941,12 +1036,21 @@ const styles = StyleSheet.create({
     height: 38,
     width: 36,
   },
+  plantLeafLarge: {
+    borderRadius: 24,
+    height: 52,
+    width: 50,
+  },
   plantPot: {
     backgroundColor: colors.coral,
     borderRadius: 5,
     height: 28,
     marginTop: -2,
     width: 34,
+  },
+  plantPotLarge: {
+    height: 36,
+    width: 44,
   },
   sceneCaption: {
     bottom: 34,

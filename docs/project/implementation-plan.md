@@ -124,7 +124,7 @@ Screens can read consistent mock data instead of hardcoded scattered values.
 Build:
 
 ```text
-5 question flow
+4 question flow
 Option selection
 Simple scoring or mapping
 Recommendation result

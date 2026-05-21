@@ -33,3 +33,5 @@ Removed: removed scope or files
 - Added persisted current routine selection.
 - Changed MVP 1 app-facing language to Korean.
 - Added Korean-first internal language policy to project docs.
+- Removed the onboarding record-style question.
+- Changed My Room to prioritize a large room scene over routine/frame lists.

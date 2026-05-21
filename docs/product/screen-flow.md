@@ -171,15 +171,12 @@ MVP에서는 별도 깊은 편집 화면을 만들지 않아도 된다.
 현재 루틴
 캐릭터 상태
 방 장면
-오늘의 루틴 목록
-최근 Setlog Frames
 ```
 
 주요 액션:
 
 ```text
 Set routines
-Select current routine
 View Daily Replay
 Open Closet
 Open Archive
