@@ -46,3 +46,4 @@ Removed: removed scope or files
 - Changed Closet from onboarding reset placeholder to Character / Room customization tabs.
 - Changed Closet tabs to show large character/room previews with selectable species, color, outfit, prop, wallpaper, floor, and furniture options.
 - Changed Closet controls from stacked option groups to sub-tabs with color swatches and simple option icons.
+- Changed My Room and room customization preview from flat room blocks to a simple 2.5D corner-room composition.

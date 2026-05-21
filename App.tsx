@@ -689,7 +689,10 @@ function DecorRoomPreview({
 
   return (
     <View style={[styles.decorRoomPreview, { backgroundColor: wallColor }]}>
+      <View style={[styles.decorBackWall, { backgroundColor: wallColor }]} />
+      <View style={[styles.decorSideWall, { backgroundColor: wallColor }]} />
       <View style={[styles.decorFloor, { backgroundColor: floorColor }]} />
+      <View style={styles.decorCornerLine} />
       <View style={styles.decorWindow} />
       <View style={styles.decorShelf} />
       <View style={styles.decorDesk}>
@@ -851,6 +854,10 @@ function RoomIllustration({
         { backgroundColor: roomColor.wall },
       ]}
     >
+      <View style={[styles.cornerBackWall, { backgroundColor: roomColor.wall }]} />
+      <View style={[styles.cornerSideWall, { backgroundColor: roomColor.wall }]} />
+      <View style={[styles.cornerFloor, { backgroundColor: roomColor.floor }]} />
+      <View style={styles.cornerLine} />
       <View
         style={[
           styles.wallShelf,
@@ -1467,6 +1474,7 @@ const styles = StyleSheet.create({
   },
   roomScene: {
     aspectRatio: 1.18,
+    backgroundColor: colors.wall,
     borderColor: colors.line,
     borderRadius: radius.md,
     borderWidth: 1,
@@ -1481,17 +1489,51 @@ const styles = StyleSheet.create({
     borderRadius: 0,
     borderWidth: 0,
   },
+  cornerBackWall: {
+    backgroundColor: colors.wall,
+    height: '54%',
+    left: 0,
+    position: 'absolute',
+    right: '34%',
+    top: 0,
+  },
+  cornerSideWall: {
+    backgroundColor: '#D9E1E5',
+    height: '54%',
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: '34%',
+  },
+  cornerFloor: {
+    backgroundColor: colors.floor,
+    bottom: 0,
+    height: '46%',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    transform: [{ skewX: '-10deg' }],
+  },
+  cornerLine: {
+    backgroundColor: 'rgba(38, 49, 43, 0.16)',
+    height: 2,
+    left: '5%',
+    position: 'absolute',
+    right: '5%',
+    top: '54%',
+    transform: [{ rotate: '-6deg' }],
+  },
   wallShelf: {
     height: 8,
-    left: 26,
+    left: 34,
     position: 'absolute',
-    top: 44,
+    top: 58,
     width: 92,
   },
   wallShelfLarge: {
-    left: 48,
-    top: 118,
-    width: 132,
+    left: 52,
+    top: 132,
+    width: 146,
   },
   windowBox: {
     backgroundColor: '#C8D8D7',
@@ -1500,29 +1542,30 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     height: 62,
     position: 'absolute',
-    right: 28,
-    top: 32,
+    right: 34,
+    top: 54,
     width: 76,
   },
   windowBoxLarge: {
     height: 86,
-    right: 28,
-    top: 92,
+    right: 34,
+    top: 118,
     width: 82,
   },
   desk: {
     borderRadius: radius.sm,
-    bottom: 78,
+    bottom: 70,
     height: 54,
-    left: 42,
+    left: 44,
     position: 'absolute',
+    transform: [{ skewX: '-8deg' }],
     width: 156,
   },
   deskLarge: {
-    bottom: 268,
-    height: 72,
+    bottom: 198,
+    height: 82,
     left: 58,
-    width: 190,
+    width: 214,
   },
   monitor: {
     backgroundColor: colors.blue,
@@ -1556,13 +1599,13 @@ const styles = StyleSheet.create({
   },
   avatar: {
     alignItems: 'center',
-    bottom: 82,
-    left: 176,
+    bottom: 78,
+    left: 178,
     position: 'absolute',
   },
   avatarLarge: {
-    bottom: 274,
-    left: 214,
+    bottom: 216,
+    left: 224,
   },
   avatarHead: {
     borderRadius: 24,
@@ -1588,13 +1631,13 @@ const styles = StyleSheet.create({
   },
   plant: {
     alignItems: 'center',
-    bottom: 78,
+    bottom: 76,
     position: 'absolute',
     right: 34,
   },
   plantLarge: {
-    bottom: 278,
-    right: 46,
+    bottom: 222,
+    right: 42,
   },
   plantLeaf: {
     backgroundColor: colors.green,
@@ -1631,9 +1674,9 @@ const styles = StyleSheet.create({
     width: 54,
   },
   routinePropLarge: {
-    bottom: 332,
+    bottom: 286,
     height: 44,
-    left: 96,
+    left: 104,
     width: 74,
   },
   routinePropText: {
@@ -1853,12 +1896,37 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
+  decorBackWall: {
+    height: 162,
+    left: 0,
+    position: 'absolute',
+    right: '34%',
+    top: 0,
+  },
+  decorSideWall: {
+    height: 162,
+    opacity: 0.82,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+    width: '34%',
+  },
   decorFloor: {
     bottom: 0,
-    height: 116,
+    height: 138,
     left: 0,
     position: 'absolute',
     right: 0,
+    transform: [{ skewX: '-10deg' }],
+  },
+  decorCornerLine: {
+    backgroundColor: 'rgba(38, 49, 43, 0.16)',
+    height: 2,
+    left: 24,
+    position: 'absolute',
+    right: 24,
+    top: 160,
+    transform: [{ rotate: '-6deg' }],
   },
   decorWindow: {
     backgroundColor: '#C8D8D7',
@@ -1867,25 +1935,26 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     height: 70,
     position: 'absolute',
-    right: 30,
-    top: 34,
+    right: 34,
+    top: 42,
     width: 82,
   },
   decorShelf: {
     backgroundColor: colors.blue,
     height: 8,
-    left: 34,
+    left: 42,
     position: 'absolute',
-    top: 76,
+    top: 78,
     width: 118,
   },
   decorDesk: {
     backgroundColor: '#AEB8BE',
     borderRadius: radius.sm,
-    bottom: 76,
+    bottom: 70,
     height: 62,
     left: 46,
     position: 'absolute',
+    transform: [{ skewX: '-8deg' }],
     width: 188,
   },
   decorMonitor: {
@@ -1899,7 +1968,7 @@ const styles = StyleSheet.create({
   },
   decorPlant: {
     alignItems: 'center',
-    bottom: 86,
+    bottom: 84,
     position: 'absolute',
     right: 46,
   },
