@@ -249,15 +249,11 @@ export default function App() {
             <RoutineScreen
               currentRoutineId={currentRoutineId}
               onSelectRoutine={selectCurrentRoutine}
-              onDone={() => open('room')}
-            />
-          )}
-          {screen === 'replay' && (
-            <ReplayScreen
               frames={frames}
               currentRoutine={currentRoutine}
               onGenerateFrame={generateFrame}
               onResetFrames={resetFrames}
+              onDone={() => open('room')}
             />
           )}
           {screen === 'closet' && (
@@ -421,16 +417,27 @@ function RoomScreen({
 function RoutineScreen({
   currentRoutineId,
   onSelectRoutine,
+  frames,
+  currentRoutine,
+  onGenerateFrame,
+  onResetFrames,
   onDone,
 }: {
   currentRoutineId: string;
   onSelectRoutine: (routineId: string) => void;
+  frames: SetlogFrame[];
+  currentRoutine: Routine;
+  onGenerateFrame: () => void;
+  onResetFrames: () => void;
   onDone: () => void;
 }) {
+  const replaySummary = buildReplaySummary(frames);
+  const replayStats = buildReplayStats(frames);
+
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>오늘의 루틴 설정</Text>
-      <Text style={styles.heroTitle}>지금 방에 보여줄 루틴을 골라주세요.</Text>
+      <Text style={styles.kicker}>루틴</Text>
+      <Text style={styles.heroTitle}>오늘 방에 보여줄 루틴을 골라주세요.</Text>
       {routinePresets.map((routine) => {
         const selected = routine.id === currentRoutineId;
         return (
@@ -450,35 +457,11 @@ function RoutineScreen({
         );
       })}
       <PrimaryButton label="내 방으로 돌아가기" onPress={onDone} />
-    </View>
-  );
-}
 
-function ReplayScreen({
-  frames,
-  currentRoutine,
-  onGenerateFrame,
-  onResetFrames,
-}: {
-  frames: SetlogFrame[];
-  currentRoutine: Routine;
-  onGenerateFrame: () => void;
-  onResetFrames: () => void;
-}) {
-  const [selectedFrameId, setSelectedFrameId] = useState(frames[0]?.id);
-  const replaySummary = buildReplaySummary(frames);
-  const replayStats = buildReplayStats(frames);
-  const selectedFrame =
-    frames.find((frame) => frame.id === selectedFrameId) ?? frames[0] ?? setlogFrames[0];
+      <View style={styles.sectionDivider} />
 
-  useEffect(() => {
-    setSelectedFrameId(frames[0]?.id);
-  }, [frames]);
-
-  return (
-    <View style={styles.stack}>
-      <Text style={styles.kicker}>데일리 리플레이</Text>
-      <Text style={styles.heroTitle}>{dailyReplay.date}</Text>
+      <Text style={styles.kicker}>오늘 로그</Text>
+      <Text style={styles.sectionTitle}>{dailyReplay.date}</Text>
       <View style={styles.buttonRow}>
         <SecondaryButton
           label={`${currentRoutine.title} 프레임 생성`}
@@ -505,30 +488,13 @@ function ReplayScreen({
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>생성된 프레임</Text>
         {frames.map((frame) => (
-          <Pressable
-            key={frame.id}
-            style={[
-              styles.timelineRow,
-              selectedFrame.id === frame.id && styles.timelineRowActive,
-            ]}
-            onPress={() => setSelectedFrameId(frame.id)}
-          >
+          <View key={frame.id} style={styles.timelineRow}>
             <Text style={styles.frameTime}>{frame.timestamp}</Text>
             <Text style={styles.timelineText}>
               {routineLabels[frame.routineType]} - {frame.variationLabel}
             </Text>
-          </Pressable>
+          </View>
         ))}
-      </View>
-      <View style={styles.panel}>
-        <View style={styles.frameDetailHeader}>
-          <Text style={styles.panelTitle}>프레임 상세</Text>
-          <Text style={styles.frameTime}>{selectedFrame.timestamp}</Text>
-        </View>
-        <MetricRow label="루틴" value={routineLabels[selectedFrame.routineType]} />
-        <MetricRow label="상태" value={statusLabel(selectedFrame.routineStatus)} />
-        <MetricRow label="장면" value={selectedFrame.sceneLabel} />
-        <MetricRow label="Variation" value={selectedFrame.variationLabel} />
       </View>
     </View>
   );
@@ -648,7 +614,6 @@ function BottomNav({
   const items: { label: string; screen: ScreenName }[] = [
     { label: '방', screen: 'room' },
     { label: '루틴', screen: 'routine' },
-    { label: '리플레이', screen: 'replay' },
     { label: '옷장', screen: 'closet' },
     { label: '아카이브', screen: 'archive' },
   ];
@@ -901,7 +866,6 @@ function screenTitle(screen: ScreenName) {
     recommendation: '추천 결과',
     room: '내 방',
     routine: '루틴',
-    replay: '데일리 리플레이',
     closet: '옷장',
     archive: '아카이브',
   };
@@ -994,6 +958,11 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: '900',
     lineHeight: 34,
+  },
+  sectionDivider: {
+    backgroundColor: colors.line,
+    height: 1,
+    marginVertical: spacing.sm,
   },
   bodyText: {
     color: colors.muted,
@@ -1464,23 +1433,11 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
-  timelineRowActive: {
-    backgroundColor: '#EEF3EA',
-    borderRadius: radius.sm,
-    marginHorizontal: -spacing.sm,
-    paddingHorizontal: spacing.sm,
-  },
   timelineText: {
     color: colors.ink,
     flex: 1,
     fontSize: 14,
     fontWeight: '700',
-  },
-  frameDetailHeader: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.md,
   },
   nav: {
     backgroundColor: colors.panel,

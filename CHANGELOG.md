@@ -41,3 +41,5 @@ Removed: removed scope or files
 - Added selectable Setlog Frame detail in Daily Replay.
 - Changed My Room into a focus display with only date, time, current routine, room, character, and bottom navigation.
 - Removed recommendation state copy from the MVP data model.
+- Merged Routine and Replay into one Routine / Today Log screen.
+- Removed Setlog Frame detail from MVP 1.

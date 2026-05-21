@@ -15,7 +15,7 @@ My Room에 들어간다.
 오늘의 루틴을 선택한다.
 seed Setlog Frame을 확인한다.
 현재 루틴 기준 Setlog Frame을 수동 생성한다.
-생성된 frame 기반 Daily Replay를 확인한다.
+생성된 frame 기반 Today Log를 확인한다.
 Closet/Archive placeholder를 확인한다.
 ```
 
@@ -65,7 +65,6 @@ app/
   recommendation.tsx
   room.tsx
   routine.tsx
-  replay.tsx
   closet.tsx
   archive.tsx
 
@@ -110,7 +109,7 @@ Routine types
 Avatar types
 Room types
 Setlog Frame types
-Daily Replay types
+Today Log summary types
 mockData.ts
 ```
 
@@ -146,18 +145,15 @@ Build:
 Room scene area
 Small animal character representation
 Current routine state
-Today's routine list
-Recent Setlog Frame status
-Manual Setlog Frame generation action
 ```
 
 Done when:
 
 ```text
-The My Room screen shows the current routine, routine-specific room scene, and generated frame count.
+The My Room screen shows only the current routine, date/time, room scene, character, and bottom navigation.
 ```
 
-### Step 5. Today's Routine
+### Step 5. Routine / Today Log
 
 Build:
 
@@ -165,33 +161,20 @@ Build:
 Routine preset list
 Multi-select today's routines
 Select current routine
+Manual Setlog Frame generation
+Routine Summary from generated frames
+Generated Frames timeline
+Simple stats
 Return to My Room
 ```
 
 Done when:
 
 ```text
-User can choose today's routines from presets and see them reflected in My Room.
+User can choose today's routine, generate a frame, and read today's log in one screen.
 ```
 
-### Step 6. Daily Replay
-
-Build:
-
-```text
-Routine Summary from generated frames
-Generated Frames timeline
-Simple stats
-Frame detail entry
-```
-
-Done when:
-
-```text
-Daily Replay presents the generated frames as a log-like record.
-```
-
-### Step 7. Placeholders
+### Step 6. Placeholders
 
 Build:
 
@@ -244,7 +227,7 @@ Main screens are reachable.
 No major text overlap on mobile.
 Onboarding can be completed.
 Routine selection changes visible state.
-Daily Replay is readable.
+Today Log is readable inside the Routine screen.
 Shared Room is not accidentally implemented in MVP 1.
 ```
 

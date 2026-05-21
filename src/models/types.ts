@@ -3,7 +3,6 @@ export type ScreenName =
   | 'recommendation'
   | 'room'
   | 'routine'
-  | 'replay'
   | 'closet'
   | 'archive';
 
