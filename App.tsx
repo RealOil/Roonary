@@ -95,7 +95,6 @@ export default function App() {
     () => routinePresets.find((routine) => routine.id === currentRoutineId) ?? routinePresets[0],
     [currentRoutineId],
   );
-  const latestFrame = useMemo(() => getLatestFrame(frames), [frames]);
 
   useEffect(() => {
     let mounted = true;
@@ -244,11 +243,6 @@ export default function App() {
             <RoomScreen
               currentRoutine={currentRoutine}
               recommendation={recommendation}
-              latestFrame={latestFrame}
-              frameCount={frames.length}
-              onRoutinePress={() => open('routine')}
-              onReplayPress={() => open('replay')}
-              onGenerateFrame={generateFrame}
             />
           )}
           {screen === 'routine' && (
@@ -258,7 +252,14 @@ export default function App() {
               onDone={() => open('room')}
             />
           )}
-          {screen === 'replay' && <ReplayScreen frames={frames} onResetFrames={resetFrames} />}
+          {screen === 'replay' && (
+            <ReplayScreen
+              frames={frames}
+              currentRoutine={currentRoutine}
+              onGenerateFrame={generateFrame}
+              onResetFrames={resetFrames}
+            />
+          )}
           {screen === 'closet' && (
             <PlaceholderScreen
               title="옷장"
@@ -380,20 +381,20 @@ function RecommendationScreen({
 function RoomScreen({
   currentRoutine,
   recommendation,
-  latestFrame,
-  frameCount,
-  onRoutinePress,
-  onReplayPress,
-  onGenerateFrame,
 }: {
   currentRoutine: Routine;
   recommendation: RecommendationResult;
-  latestFrame: SetlogFrame;
-  frameCount: number;
-  onRoutinePress: () => void;
-  onReplayPress: () => void;
-  onGenerateFrame: () => void;
 }) {
+  const [currentTime, setCurrentTime] = useState(formatCurrentTimeLabel());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(formatCurrentTimeLabel());
+    }, 30000);
+
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <View style={styles.roomExperience}>
       <RoomIllustration
@@ -405,28 +406,12 @@ function RoomScreen({
 
       <View style={styles.roomOverlayTop}>
         <View>
-          <Text style={styles.kicker}>{formatTodayLabel()}</Text>
-          <Text style={styles.heroTitle}>내 방</Text>
+          <Text style={styles.roomDateText}>{formatTodayLabel()}</Text>
+          <Text style={styles.roomTimeText}>{currentTime}</Text>
         </View>
-        <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>{statusLabel(currentRoutine.status)}</Text>
-        </View>
-      </View>
-
-      <View style={styles.roomDockOverlay}>
-        <View style={styles.roomDockText}>
-          <Text style={styles.kicker}>현재 루틴</Text>
-          <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
-        </View>
-        <Text style={styles.bodyText}>{recommendation.stateLabel}</Text>
-        <View style={styles.roomMetaRow}>
-          <Text style={styles.subtleText}>최근 프레임 {latestFrame.timestamp}</Text>
-          <Text style={styles.subtleText}>총 {frameCount}개</Text>
-        </View>
-        <View style={styles.buttonRow}>
-          <SecondaryButton label="프레임 생성" onPress={onGenerateFrame} />
-          <SecondaryButton label="루틴 설정" onPress={onRoutinePress} />
-          <SecondaryButton label="데일리 리플레이" onPress={onReplayPress} />
+        <View style={styles.roomRoutineBadge}>
+          <Text style={styles.roomRoutineKicker}>현재 루틴</Text>
+          <Text style={styles.roomRoutineText}>{currentRoutine.title}</Text>
         </View>
       </View>
     </View>
@@ -471,9 +456,13 @@ function RoutineScreen({
 
 function ReplayScreen({
   frames,
+  currentRoutine,
+  onGenerateFrame,
   onResetFrames,
 }: {
   frames: SetlogFrame[];
+  currentRoutine: Routine;
+  onGenerateFrame: () => void;
   onResetFrames: () => void;
 }) {
   const [selectedFrameId, setSelectedFrameId] = useState(frames[0]?.id);
@@ -482,10 +471,21 @@ function ReplayScreen({
   const selectedFrame =
     frames.find((frame) => frame.id === selectedFrameId) ?? frames[0] ?? setlogFrames[0];
 
+  useEffect(() => {
+    setSelectedFrameId(frames[0]?.id);
+  }, [frames]);
+
   return (
     <View style={styles.stack}>
       <Text style={styles.kicker}>데일리 리플레이</Text>
       <Text style={styles.heroTitle}>{dailyReplay.date}</Text>
+      <View style={styles.buttonRow}>
+        <SecondaryButton
+          label={`${currentRoutine.title} 프레임 생성`}
+          onPress={onGenerateFrame}
+        />
+        <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
+      </View>
       <View style={styles.statsGrid}>
         <StatCard label="방 EXP" value={`+${replayStats.roomExp}`} />
         <StatCard label="집중" value={`+${replayStats.focus}`} />
@@ -530,7 +530,6 @@ function ReplayScreen({
         <MetricRow label="장면" value={selectedFrame.sceneLabel} />
         <MetricRow label="Variation" value={selectedFrame.variationLabel} />
       </View>
-      <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
     </View>
   );
 }
@@ -624,13 +623,9 @@ function RoomIllustration({
         <View style={[styles.plantPot, size === 'large' && styles.plantPotLarge]} />
       </View>
       <View style={[styles.routineProp, size === 'large' && styles.routinePropLarge, scene.propStyle]}>
-        <Text style={[styles.routinePropText, size === 'large' && styles.routinePropTextLarge]}>
-          {scene.symbol}
-        </Text>
+        {size !== 'large' && <Text style={styles.routinePropText}>{scene.symbol}</Text>}
       </View>
-      <Text style={[styles.sceneActionLabel, size === 'large' && styles.sceneActionLabelLarge]}>
-        {scene.label}
-      </Text>
+      {size !== 'large' && <Text style={styles.sceneActionLabel}>{scene.label}</Text>}
       {size !== 'large' && (
         <>
           <Text style={styles.sceneCaption}>{routineLabel}</Text>
@@ -791,11 +786,6 @@ function buildReplayStats(frames: SetlogFrame[]) {
   };
 }
 
-function getLatestFrame(frames: SetlogFrame[]) {
-  const generatedFrame = frames.find((frame) => !/^frame-\d{4}$/.test(frame.id));
-  return generatedFrame ?? frames[frames.length - 1] ?? setlogFrames[setlogFrames.length - 1];
-}
-
 const routineVariations: Record<RoutineType, string[]> = {
   code_work: ['노트북 집중', '커피 옆 타이핑', '작업 보드 정리'],
   read: ['소파 독서', '차와 함께 책 읽기', '책장 앞 메모'],
@@ -894,6 +884,14 @@ function formatTodayLabel() {
     month: '2-digit',
     day: '2-digit',
     weekday: 'short',
+  }).format(new Date());
+}
+
+function formatCurrentTimeLabel() {
+  return new Intl.DateTimeFormat('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
   }).format(new Date());
 }
 
@@ -1075,38 +1073,35 @@ const styles = StyleSheet.create({
     top: spacing.lg,
     zIndex: 2,
   },
-  roomDockOverlay: {
-    backgroundColor: colors.panel,
-    borderColor: colors.line,
-    borderRadius: radius.md,
-    borderWidth: 1,
-    bottom: spacing.lg,
-    gap: spacing.md,
-    left: spacing.lg,
-    padding: spacing.lg,
-    position: 'absolute',
-    right: spacing.lg,
-    zIndex: 2,
-  },
-  roomDockText: {
-    gap: spacing.xs,
-  },
-  roomMetaRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  statusBadge: {
-    backgroundColor: '#EEF3EA',
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  statusText: {
+  roomDateText: {
     color: colors.green,
     fontSize: 12,
     fontWeight: '800',
-    textTransform: 'uppercase',
+  },
+  roomTimeText: {
+    color: colors.ink,
+    fontSize: 30,
+    fontWeight: '900',
+    lineHeight: 34,
+  },
+  roomRoutineBadge: {
+    alignItems: 'flex-end',
+    backgroundColor: 'rgba(250, 246, 238, 0.82)',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  roomRoutineKicker: {
+    color: colors.green,
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  roomRoutineText: {
+    color: colors.ink,
+    fontSize: 15,
+    fontWeight: '900',
   },
   roomScene: {
     aspectRatio: 1.18,
@@ -1150,7 +1145,7 @@ const styles = StyleSheet.create({
   windowBoxLarge: {
     height: 86,
     right: 28,
-    top: 48,
+    top: 92,
     width: 82,
   },
   desk: {
@@ -1274,18 +1269,15 @@ const styles = StyleSheet.create({
     width: 54,
   },
   routinePropLarge: {
-    bottom: 370,
+    bottom: 332,
     height: 44,
-    left: 76,
+    left: 96,
     width: 74,
   },
   routinePropText: {
     color: colors.ink,
     fontSize: 11,
     fontWeight: '900',
-  },
-  routinePropTextLarge: {
-    fontSize: 13,
   },
   sceneActionLabel: {
     color: colors.muted,
@@ -1294,10 +1286,6 @@ const styles = StyleSheet.create({
     left: 154,
     position: 'absolute',
     top: 118,
-  },
-  sceneActionLabelLarge: {
-    left: 58,
-    top: 224,
   },
   sceneCaption: {
     bottom: 34,

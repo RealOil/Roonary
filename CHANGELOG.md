@@ -39,3 +39,5 @@ Removed: removed scope or files
 - Changed Daily Replay to summarize generated frames instead of a fixed replay mock.
 - Added routine-specific room scene props and labels.
 - Added selectable Setlog Frame detail in Daily Replay.
+- Changed My Room into a focus display with only date, time, current routine, room, character, and bottom navigation.
+- Removed recommendation state copy from the MVP data model.

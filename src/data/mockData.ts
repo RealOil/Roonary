@@ -174,7 +174,6 @@ export const defaultRecommendation: RecommendationResult = {
   roomThemeLabel: '깔끔한 책상',
   roomTheme: 'clean_desk',
   routines: ['계획', '업무 / 공부', '회고', '휴식'],
-  stateLabel: '작은 플래너를 옆에 두고 책상에서 집중하는 중.',
 };
 
 export const recommendationProfiles: Record<string, RecommendationResult> = {
@@ -186,7 +185,6 @@ export const recommendationProfiles: Record<string, RecommendationResult> = {
     roomThemeLabel: '조용한 카페',
     roomTheme: 'quiet_cafe',
     routines: ['업무 / 공부', '창작', '운동', '휴식'],
-    stateLabel: '밝은 책상 앞에서 빠르게 시작할 준비를 마친 상태.',
   },
   cozy: {
     presetLabel: '포근한 완주가',
@@ -195,7 +193,6 @@ export const recommendationProfiles: Record<string, RecommendationResult> = {
     roomThemeLabel: '포근한 방',
     roomTheme: 'cozy_room',
     routines: ['독서', '휴식', '회고', '계획'],
-    stateLabel: '포근한 구석에 자리를 잡고 천천히 이어가는 중.',
   },
   buddy: {
     presetLabel: '룸 버디',
@@ -204,7 +201,6 @@ export const recommendationProfiles: Record<string, RecommendationResult> = {
     roomThemeLabel: '깔끔한 책상',
     roomTheme: 'clean_desk',
     routines: ['계획', '업무 / 공부', '독서', '회고'],
-    stateLabel: '함께 하는 리듬을 떠올리며 페이스를 맞추는 중.',
   },
   deep: {
     presetLabel: '깊은 몰입가',
@@ -213,7 +209,6 @@ export const recommendationProfiles: Record<string, RecommendationResult> = {
     roomThemeLabel: '밤의 작업실',
     roomTheme: 'night_studio',
     routines: ['업무 / 공부', '독서', '회고', '휴식'],
-    stateLabel: '낮은 조명의 작업실에서 깊게 몰입하는 중.',
   },
   restorer: {
     presetLabel: '부드러운 회복가',
@@ -222,6 +217,5 @@ export const recommendationProfiles: Record<string, RecommendationResult> = {
     roomThemeLabel: '포근한 방',
     roomTheme: 'cozy_room',
     routines: ['휴식', '운동', '회고', '독서'],
-    stateLabel: '차분한 방에서 회복과 루틴의 균형을 맞추는 중.',
   },
 };

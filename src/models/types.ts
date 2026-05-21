@@ -123,5 +123,4 @@ export interface RecommendationResult {
   roomThemeLabel: string;
   roomTheme: RoomTheme;
   routines: string[];
-  stateLabel: string;
 }
