@@ -43,3 +43,4 @@ Removed: removed scope or files
 - Removed recommendation state copy from the MVP data model.
 - Merged Routine and Replay into one Routine / Today Log screen.
 - Removed Setlog Frame detail from MVP 1.
+- Changed Closet from onboarding reset placeholder to Character / Room customization tabs.

@@ -179,14 +179,15 @@ User can choose today's routine, generate a frame, and read today's log in one s
 Build:
 
 ```text
-Closet placeholder
+Closet character/room customization tabs
 Archive placeholder
 ```
 
 Done when:
 
 ```text
-Both screens are reachable and explain their future role with minimal text.
+Closet has reachable character and room tabs.
+Archive is reachable and explains its future role with minimal text.
 ```
 
 ---

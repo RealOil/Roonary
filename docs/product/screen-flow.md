@@ -198,22 +198,22 @@ Room/Focus/Wellness/Creativity stats
 
 ---
 
-### 5.5 Closet Placeholder
+### 5.5 Closet
 
 진입:
 
 ```text
 하단 Closet 탭
-My Room의 change outfit/room action
 ```
 
 표시 정보:
 
 ```text
-현재 캐릭터
-현재 프리셋
-현재 색상
-잠금/준비 중 상태
+캐릭터 꾸미기 탭
+방 꾸미기 탭
+현재 캐릭터 프리셋
+현재 색상 프리셋
+현재 방 테마와 가구 프리셋
 ```
 
 이탈:

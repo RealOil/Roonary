@@ -198,16 +198,6 @@ export default function App() {
     }
   };
 
-  const resetOnboarding = async () => {
-    await AsyncStorage.removeItem(STORAGE_KEY);
-    setOnboardingCompleted(false);
-    setOnboardingAnswers({});
-    setRecommendation(defaultRecommendation);
-    setCurrentRoutineId('routine-code');
-    setFrames(setlogFrames);
-    open('onboarding');
-  };
-
   if (!hydrated) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -257,18 +247,10 @@ export default function App() {
             />
           )}
           {screen === 'closet' && (
-            <PlaceholderScreen
-              title="옷장"
-              recommendation={recommendation}
-              onReset={resetOnboarding}
-            />
+            <ClosetScreen recommendation={recommendation} />
           )}
           {screen === 'archive' && (
-            <PlaceholderScreen
-              title="아카이브"
-              recommendation={recommendation}
-              onReset={resetOnboarding}
-            />
+            <ArchiveScreen />
           )}
         </ScrollView>
         {screen !== 'onboarding' && screen !== 'recommendation' && (
@@ -500,30 +482,111 @@ function RoutineScreen({
   );
 }
 
-function PlaceholderScreen({
-  title,
+function ClosetScreen({
   recommendation,
-  onReset,
 }: {
-  title: string;
   recommendation: RecommendationResult;
-  onReset: () => void;
 }) {
-  const isCloset = title === '옷장';
+  const [activeTab, setActiveTab] = useState<'character' | 'room'>('character');
+  const colorOptions = uniqueLabels([
+    recommendation.colorLabel,
+    '이끼 초록',
+    '따뜻한 코랄',
+    '슬레이트 블루',
+  ]);
+  const roomOptions = uniqueLabels([
+    recommendation.roomThemeLabel,
+    '깔끔한 책상',
+    '포근한 방',
+    '밤의 작업실',
+  ]);
 
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>MVP 1 자리 표시</Text>
-      <Text style={styles.heroTitle}>{title}</Text>
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>{isCloset ? '현재 캐릭터' : '저장된 기록'}</Text>
-        <Text style={styles.bodyText}>
-          {isCloset
-            ? `${recommendation.presetLabel} ${recommendation.animalLabel} / ${recommendation.colorLabel}. 의상과 소품은 다음 MVP에서 확장합니다.`
-            : '오늘의 데일리 리플레이가 이곳에 표시됩니다. 과거 기록 필터는 다음 MVP에서 확장합니다.'}
-        </Text>
+      <Text style={styles.kicker}>옷장</Text>
+      <Text style={styles.heroTitle}>캐릭터와 방의 첫 인상을 정리해요.</Text>
+      <View style={styles.segmentedControl}>
+        <Pressable
+          style={[
+            styles.segmentButton,
+            activeTab === 'character' && styles.segmentButtonActive,
+          ]}
+          onPress={() => setActiveTab('character')}
+        >
+          <Text
+            style={[
+              styles.segmentText,
+              activeTab === 'character' && styles.segmentTextActive,
+            ]}
+          >
+            캐릭터 꾸미기
+          </Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.segmentButton,
+            activeTab === 'room' && styles.segmentButtonActive,
+          ]}
+          onPress={() => setActiveTab('room')}
+        >
+          <Text style={[styles.segmentText, activeTab === 'room' && styles.segmentTextActive]}>
+            방 꾸미기
+          </Text>
+        </Pressable>
       </View>
-      {isCloset && <SecondaryButton label="온보딩 다시 하기" onPress={onReset} />}
+
+      {activeTab === 'character' ? (
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>현재 캐릭터</Text>
+          <MetricRow label="프리셋" value={recommendation.presetLabel} />
+          <MetricRow label="동물" value={recommendation.animalLabel} />
+          <Text style={styles.subtleText}>기본 색상</Text>
+          <View style={styles.swatchGrid}>
+            {colorOptions.map((label, index) => (
+              <View key={`${label}-${index}`} style={styles.swatchItem}>
+                <View style={[styles.colorSwatch, { backgroundColor: swatchColor(label) }]} />
+                <Text style={styles.swatchLabel}>{label}</Text>
+              </View>
+            ))}
+          </View>
+          <View style={styles.cardGrid}>
+            {['기본 앞치마', '작은 플래너', '머그컵 소품'].map((item) => (
+              <View key={item} style={styles.miniCard}>
+                <Text style={styles.cardTitle}>{item}</Text>
+                <Text style={styles.subtleText}>MVP 프리셋</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : (
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>현재 방</Text>
+          <MetricRow label="테마" value={recommendation.roomThemeLabel} />
+          <MetricRow label="가구" value={mockRoom.furnitureLabels.join(', ')} />
+          <Text style={styles.subtleText}>방 테마 프리셋</Text>
+          <View style={styles.cardGrid}>
+            {roomOptions.map((label, index) => (
+              <View key={`${label}-${index}`} style={styles.miniCard}>
+                <View style={[styles.roomThemeChip, { backgroundColor: roomSwatchColor(label) }]} />
+                <Text style={styles.cardTitle}>{label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
+function ArchiveScreen() {
+  return (
+    <View style={styles.stack}>
+      <Text style={styles.kicker}>MVP 1 자리 표시</Text>
+      <Text style={styles.heroTitle}>아카이브</Text>
+      <View style={styles.panel}>
+        <Text style={styles.panelTitle}>저장된 기록</Text>
+        <Text style={styles.bodyText}>오늘 로그가 이곳에 표시됩니다. 과거 기록 필터는 다음 MVP에서 확장합니다.</Text>
+      </View>
     </View>
   );
 }
@@ -844,6 +907,34 @@ function roomThemeColor(roomTheme: RecommendationResult['roomTheme']) {
   return themes[roomTheme];
 }
 
+function swatchColor(label: string) {
+  const swatches: Record<string, string> = {
+    '이끼 초록': colors.green,
+    '따뜻한 코랄': colors.coral,
+    '슬레이트 블루': colors.blue,
+    '부드러운 크림': '#EADCC8',
+    '잎사귀 초록': '#9EB58C',
+    '꿀빛 노랑': colors.yellow,
+  };
+
+  return swatches[label] ?? colors.green;
+}
+
+function roomSwatchColor(label: string) {
+  const swatches: Record<string, string> = {
+    '깔끔한 책상': colors.wall,
+    '포근한 방': '#EBD6C7',
+    '밤의 작업실': '#CED7DF',
+    '조용한 카페': '#D8E1DC',
+  };
+
+  return swatches[label] ?? colors.wall;
+}
+
+function uniqueLabels(labels: string[]) {
+  return Array.from(new Set(labels));
+}
+
 function formatTodayLabel() {
   return new Intl.DateTimeFormat('ko-KR', {
     month: '2-digit',
@@ -1020,6 +1111,31 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.md,
     padding: spacing.lg,
+  },
+  segmentedControl: {
+    backgroundColor: '#EEF3EA',
+    borderRadius: radius.md,
+    flexDirection: 'row',
+    gap: spacing.xs,
+    padding: spacing.xs,
+  },
+  segmentButton: {
+    alignItems: 'center',
+    borderRadius: radius.sm,
+    flex: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  segmentButtonActive: {
+    backgroundColor: colors.ink,
+  },
+  segmentText: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  segmentTextActive: {
+    color: colors.panel,
   },
   roomTopline: {
     alignItems: 'flex-start',
@@ -1341,6 +1457,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  miniCard: {
+    backgroundColor: '#FFFDF8',
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexGrow: 1,
+    gap: spacing.xs,
+    minWidth: '31%',
+    padding: spacing.md,
+  },
+  swatchGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  swatchItem: {
+    alignItems: 'center',
+    backgroundColor: '#FFFDF8',
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexDirection: 'row',
+    gap: spacing.sm,
+    padding: spacing.sm,
+  },
+  colorSwatch: {
+    borderColor: colors.line,
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 24,
+    width: 24,
+  },
+  swatchLabel: {
+    color: colors.ink,
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  roomThemeChip: {
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: 34,
+    width: '100%',
   },
   routineCard: {
     backgroundColor: colors.panel,
