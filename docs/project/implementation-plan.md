@@ -206,6 +206,30 @@ Routine cards
 Frame cards
 ```
 
+Later production asset direction:
+
+```text
+Replace geometric room blocks with layered PNG/WebP art assets.
+Keep room background, wall/floor, furniture, avatar body, outfit, props, and routine objects as separate layers.
+Avoid baking the whole room into one static image unless it is only for a generated/shareable replay export.
+Use SVG mainly for UI icons or very simple symbols.
+Consider Lottie/Rive later only for small loop animations such as breathing, typing, reading, or resting.
+```
+
+Recommended future asset shape:
+
+```text
+assets/room/background_night_studio.webp
+assets/room/floor_light_wood.webp
+assets/furniture/desk_set.webp
+assets/furniture/plant.webp
+assets/avatar/bear_base_blue.webp
+assets/avatar/outfit_apron.webp
+assets/props/laptop.webp
+assets/props/book.webp
+assets/routine/code_work_laptop.webp
+```
+
 Avoid:
 
 ```text
