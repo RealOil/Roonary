@@ -228,7 +228,7 @@ MVP 제약:
 초기 seed Setlog Frame 목록 표시
 My Room에서 현재 루틴 기준 Setlog Frame 수동 생성
 시간, 루틴, 상태, variation 표시
-프레임 선택 시 간단 상세 표시
+프레임 선택 시 시간, 루틴, 상태, 장면, variation 상세 표시
 ```
 
 Frame 예시:

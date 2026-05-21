@@ -38,3 +38,4 @@ Removed: removed scope or files
 - Added manual Setlog Frame generation from the current routine.
 - Changed Daily Replay to summarize generated frames instead of a fixed replay mock.
 - Added routine-specific room scene props and labels.
+- Added selectable Setlog Frame detail in Daily Replay.

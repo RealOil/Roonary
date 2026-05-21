@@ -476,8 +476,11 @@ function ReplayScreen({
   frames: SetlogFrame[];
   onResetFrames: () => void;
 }) {
+  const [selectedFrameId, setSelectedFrameId] = useState(frames[0]?.id);
   const replaySummary = buildReplaySummary(frames);
   const replayStats = buildReplayStats(frames);
+  const selectedFrame =
+    frames.find((frame) => frame.id === selectedFrameId) ?? frames[0] ?? setlogFrames[0];
 
   return (
     <View style={styles.stack}>
@@ -502,13 +505,30 @@ function ReplayScreen({
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>생성된 프레임</Text>
         {frames.map((frame) => (
-          <View key={frame.id} style={styles.timelineRow}>
+          <Pressable
+            key={frame.id}
+            style={[
+              styles.timelineRow,
+              selectedFrame.id === frame.id && styles.timelineRowActive,
+            ]}
+            onPress={() => setSelectedFrameId(frame.id)}
+          >
             <Text style={styles.frameTime}>{frame.timestamp}</Text>
             <Text style={styles.timelineText}>
               {routineLabels[frame.routineType]} - {frame.variationLabel}
             </Text>
-          </View>
+          </Pressable>
         ))}
+      </View>
+      <View style={styles.panel}>
+        <View style={styles.frameDetailHeader}>
+          <Text style={styles.panelTitle}>프레임 상세</Text>
+          <Text style={styles.frameTime}>{selectedFrame.timestamp}</Text>
+        </View>
+        <MetricRow label="루틴" value={routineLabels[selectedFrame.routineType]} />
+        <MetricRow label="상태" value={statusLabel(selectedFrame.routineStatus)} />
+        <MetricRow label="장면" value={selectedFrame.sceneLabel} />
+        <MetricRow label="Variation" value={selectedFrame.variationLabel} />
       </View>
       <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
     </View>
@@ -1456,11 +1476,23 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     paddingVertical: spacing.sm,
   },
+  timelineRowActive: {
+    backgroundColor: '#EEF3EA',
+    borderRadius: radius.sm,
+    marginHorizontal: -spacing.sm,
+    paddingHorizontal: spacing.sm,
+  },
   timelineText: {
     color: colors.ink,
     flex: 1,
     fontSize: 14,
     fontWeight: '700',
+  },
+  frameDetailHeader: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
   },
   nav: {
     backgroundColor: colors.panel,
