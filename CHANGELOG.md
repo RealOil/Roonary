@@ -44,3 +44,4 @@ Removed: removed scope or files
 - Merged Routine and Replay into one Routine / Today Log screen.
 - Removed Setlog Frame detail from MVP 1.
 - Changed Closet from onboarding reset placeholder to Character / Room customization tabs.
+- Changed Closet tabs to show large character/room previews with selectable species, color, outfit, prop, wallpaper, floor, and furniture options.

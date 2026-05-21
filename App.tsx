@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -488,18 +488,25 @@ function ClosetScreen({
   recommendation: RecommendationResult;
 }) {
   const [activeTab, setActiveTab] = useState<'character' | 'room'>('character');
+  const animalOptions = uniqueLabels([recommendation.animalLabel, '부엉이', '고양이', '토끼', '곰']);
   const colorOptions = uniqueLabels([
     recommendation.colorLabel,
     '이끼 초록',
     '따뜻한 코랄',
     '슬레이트 블루',
   ]);
-  const roomOptions = uniqueLabels([
-    recommendation.roomThemeLabel,
-    '깔끔한 책상',
-    '포근한 방',
-    '밤의 작업실',
-  ]);
+  const outfitOptions = ['기본 앞치마', '니트 조끼', '작업 망토'];
+  const propOptions = ['작은 플래너', '머그컵', '헤드폰'];
+  const wallpaperOptions = ['차분한 블루', '포근한 크림', '잎사귀 그린'];
+  const floorOptions = ['밝은 나무', '차분한 회색', '따뜻한 코르크'];
+  const furnitureOptions = uniqueLabels(['책상 세트', '소파 세트', '운동 매트', '책장 세트']);
+  const [selectedAnimal, setSelectedAnimal] = useState(animalOptions[0]);
+  const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
+  const [selectedOutfit, setSelectedOutfit] = useState(outfitOptions[0]);
+  const [selectedProp, setSelectedProp] = useState(propOptions[0]);
+  const [selectedWallpaper, setSelectedWallpaper] = useState(wallpaperOptions[0]);
+  const [selectedFloor, setSelectedFloor] = useState(floorOptions[0]);
+  const [selectedFurniture, setSelectedFurniture] = useState(furnitureOptions[0]);
 
   return (
     <View style={styles.stack}>
@@ -536,45 +543,202 @@ function ClosetScreen({
       </View>
 
       {activeTab === 'character' ? (
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>현재 캐릭터</Text>
-          <MetricRow label="프리셋" value={recommendation.presetLabel} />
-          <MetricRow label="동물" value={recommendation.animalLabel} />
-          <Text style={styles.subtleText}>기본 색상</Text>
-          <View style={styles.swatchGrid}>
-            {colorOptions.map((label, index) => (
-              <View key={`${label}-${index}`} style={styles.swatchItem}>
-                <View style={[styles.colorSwatch, { backgroundColor: swatchColor(label) }]} />
-                <Text style={styles.swatchLabel}>{label}</Text>
-              </View>
+        <View style={styles.closetStack}>
+          <CharacterPreview
+            animal={selectedAnimal}
+            color={selectedColor}
+            outfit={selectedOutfit}
+            prop={selectedProp}
+          />
+          <OptionSection title="종">
+            {animalOptions.map((label) => (
+              <OptionChip
+                key={label}
+                label={label}
+                selected={selectedAnimal === label}
+                onPress={() => setSelectedAnimal(label)}
+              />
             ))}
-          </View>
-          <View style={styles.cardGrid}>
-            {['기본 앞치마', '작은 플래너', '머그컵 소품'].map((item) => (
-              <View key={item} style={styles.miniCard}>
-                <Text style={styles.cardTitle}>{item}</Text>
-                <Text style={styles.subtleText}>MVP 프리셋</Text>
-              </View>
+          </OptionSection>
+          <OptionSection title="색">
+            {colorOptions.map((label) => (
+              <SwatchChip
+                key={label}
+                label={label}
+                selected={selectedColor === label}
+                onPress={() => setSelectedColor(label)}
+              />
             ))}
-          </View>
+          </OptionSection>
+          <OptionSection title="옷">
+            {outfitOptions.map((label) => (
+              <OptionChip
+                key={label}
+                label={label}
+                selected={selectedOutfit === label}
+                onPress={() => setSelectedOutfit(label)}
+              />
+            ))}
+          </OptionSection>
+          <OptionSection title="소품">
+            {propOptions.map((label) => (
+              <OptionChip
+                key={label}
+                label={label}
+                selected={selectedProp === label}
+                onPress={() => setSelectedProp(label)}
+              />
+            ))}
+          </OptionSection>
         </View>
       ) : (
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>현재 방</Text>
-          <MetricRow label="테마" value={recommendation.roomThemeLabel} />
-          <MetricRow label="가구" value={mockRoom.furnitureLabels.join(', ')} />
-          <Text style={styles.subtleText}>방 테마 프리셋</Text>
-          <View style={styles.cardGrid}>
-            {roomOptions.map((label, index) => (
-              <View key={`${label}-${index}`} style={styles.miniCard}>
-                <View style={[styles.roomThemeChip, { backgroundColor: roomSwatchColor(label) }]} />
-                <Text style={styles.cardTitle}>{label}</Text>
-              </View>
+        <View style={styles.closetStack}>
+          <DecorRoomPreview
+            wallpaper={selectedWallpaper}
+            floor={selectedFloor}
+            furniture={selectedFurniture}
+          />
+          <OptionSection title="벽지 색">
+            {wallpaperOptions.map((label) => (
+              <SwatchChip
+                key={label}
+                label={label}
+                selected={selectedWallpaper === label}
+                onPress={() => setSelectedWallpaper(label)}
+              />
             ))}
-          </View>
+          </OptionSection>
+          <OptionSection title="바닥">
+            {floorOptions.map((label) => (
+              <SwatchChip
+                key={label}
+                label={label}
+                selected={selectedFloor === label}
+                onPress={() => setSelectedFloor(label)}
+              />
+            ))}
+          </OptionSection>
+          <OptionSection title="가구">
+            {furnitureOptions.map((label) => (
+              <OptionChip
+                key={label}
+                label={label}
+                selected={selectedFurniture === label}
+                onPress={() => setSelectedFurniture(label)}
+              />
+            ))}
+          </OptionSection>
         </View>
       )}
     </View>
+  );
+}
+
+function CharacterPreview({
+  animal,
+  color,
+  outfit,
+  prop,
+}: {
+  animal: string;
+  color: string;
+  outfit: string;
+  prop: string;
+}) {
+  const avatarColor = swatchColor(color);
+
+  return (
+    <View style={styles.customPreview}>
+      <Text style={styles.previewKicker}>{animal}</Text>
+      <View style={styles.characterStage}>
+        <View style={[styles.previewAvatarHead, { backgroundColor: avatarColor }]} />
+        <View style={[styles.previewAvatarBody, { backgroundColor: avatarColor }]}>
+          <View style={styles.previewOutfit}>
+            <Text style={styles.previewOutfitText}>{outfit}</Text>
+          </View>
+        </View>
+        <View style={styles.previewProp}>
+          <Text style={styles.previewPropText}>{prop}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function DecorRoomPreview({
+  wallpaper,
+  floor,
+  furniture,
+}: {
+  wallpaper: string;
+  floor: string;
+  furniture: string;
+}) {
+  const wallColor = wallpaperSwatchColor(wallpaper);
+  const floorColor = floorSwatchColor(floor);
+
+  return (
+    <View style={[styles.decorRoomPreview, { backgroundColor: wallColor }]}>
+      <View style={[styles.decorFloor, { backgroundColor: floorColor }]} />
+      <View style={styles.decorWindow} />
+      <View style={styles.decorShelf} />
+      <View style={styles.decorDesk}>
+        <View style={styles.decorMonitor} />
+      </View>
+      <View style={styles.decorPlant}>
+        <View style={styles.decorPlantLeaf} />
+        <View style={styles.decorPlantPot} />
+      </View>
+      <Text style={styles.decorFurnitureLabel}>{furniture}</Text>
+    </View>
+  );
+}
+
+function OptionSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <View style={styles.optionSection}>
+      <Text style={styles.panelTitle}>{title}</Text>
+      <View style={styles.optionChipGrid}>{children}</View>
+    </View>
+  );
+}
+
+function OptionChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.choiceChip, selected && styles.choiceChipActive]}
+      onPress={onPress}
+    >
+      <Text style={[styles.choiceChipText, selected && styles.choiceChipTextActive]}>{label}</Text>
+    </Pressable>
+  );
+}
+
+function SwatchChip({
+  label,
+  selected,
+  onPress,
+}: {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      style={[styles.choiceChip, styles.swatchChoiceChip, selected && styles.choiceChipActive]}
+      onPress={onPress}
+    >
+      <View style={[styles.colorSwatch, { backgroundColor: swatchColor(label) }]} />
+      <Text style={[styles.choiceChipText, selected && styles.choiceChipTextActive]}>{label}</Text>
+    </Pressable>
   );
 }
 
@@ -915,6 +1079,12 @@ function swatchColor(label: string) {
     '부드러운 크림': '#EADCC8',
     '잎사귀 초록': '#9EB58C',
     '꿀빛 노랑': colors.yellow,
+    '차분한 블루': '#CED7DF',
+    '포근한 크림': '#EBD6C7',
+    '잎사귀 그린': '#DDE4D4',
+    '밝은 나무': colors.floor,
+    '차분한 회색': '#AEB8BE',
+    '따뜻한 코르크': '#CFA88F',
   };
 
   return swatches[label] ?? colors.green;
@@ -929,6 +1099,26 @@ function roomSwatchColor(label: string) {
   };
 
   return swatches[label] ?? colors.wall;
+}
+
+function wallpaperSwatchColor(label: string) {
+  const swatches: Record<string, string> = {
+    '차분한 블루': '#CED7DF',
+    '포근한 크림': '#EBD6C7',
+    '잎사귀 그린': '#DDE4D4',
+  };
+
+  return swatches[label] ?? colors.wall;
+}
+
+function floorSwatchColor(label: string) {
+  const swatches: Record<string, string> = {
+    '밝은 나무': colors.floor,
+    '차분한 회색': '#AEB8BE',
+    '따뜻한 코르크': '#CFA88F',
+  };
+
+  return swatches[label] ?? colors.floor;
 }
 
 function uniqueLabels(labels: string[]) {
@@ -1501,6 +1691,184 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     height: 34,
     width: '100%',
+  },
+  closetStack: {
+    gap: spacing.lg,
+  },
+  customPreview: {
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    minHeight: 280,
+    overflow: 'hidden',
+    padding: spacing.lg,
+  },
+  previewKicker: {
+    color: colors.green,
+    fontSize: 13,
+    fontWeight: '900',
+  },
+  characterStage: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: 230,
+    position: 'relative',
+  },
+  previewAvatarHead: {
+    borderRadius: 54,
+    height: 108,
+    width: 108,
+  },
+  previewAvatarBody: {
+    alignItems: 'center',
+    borderRadius: 34,
+    height: 104,
+    justifyContent: 'center',
+    marginTop: -18,
+    width: 90,
+  },
+  previewOutfit: {
+    backgroundColor: 'rgba(255, 249, 240, 0.72)',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+  },
+  previewOutfitText: {
+    color: colors.ink,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  previewProp: {
+    backgroundColor: '#FFFDF8',
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    bottom: 18,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    position: 'absolute',
+    right: spacing.lg,
+  },
+  previewPropText: {
+    color: colors.ink,
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  decorRoomPreview: {
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    height: 300,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  decorFloor: {
+    bottom: 0,
+    height: 116,
+    left: 0,
+    position: 'absolute',
+    right: 0,
+  },
+  decorWindow: {
+    backgroundColor: '#C8D8D7',
+    borderColor: colors.blue,
+    borderRadius: radius.sm,
+    borderWidth: 2,
+    height: 70,
+    position: 'absolute',
+    right: 30,
+    top: 34,
+    width: 82,
+  },
+  decorShelf: {
+    backgroundColor: colors.blue,
+    height: 8,
+    left: 34,
+    position: 'absolute',
+    top: 76,
+    width: 118,
+  },
+  decorDesk: {
+    backgroundColor: '#AEB8BE',
+    borderRadius: radius.sm,
+    bottom: 76,
+    height: 62,
+    left: 46,
+    position: 'absolute',
+    width: 188,
+  },
+  decorMonitor: {
+    backgroundColor: '#DDE8EA',
+    borderRadius: radius.sm,
+    height: 44,
+    left: 28,
+    position: 'absolute',
+    top: -30,
+    width: 74,
+  },
+  decorPlant: {
+    alignItems: 'center',
+    bottom: 86,
+    position: 'absolute',
+    right: 46,
+  },
+  decorPlantLeaf: {
+    backgroundColor: colors.green,
+    borderRadius: 22,
+    height: 48,
+    width: 46,
+  },
+  decorPlantPot: {
+    backgroundColor: colors.coral,
+    borderRadius: radius.sm,
+    height: 34,
+    marginTop: -2,
+    width: 40,
+  },
+  decorFurnitureLabel: {
+    bottom: spacing.lg,
+    color: colors.ink,
+    fontSize: 15,
+    fontWeight: '900',
+    left: spacing.lg,
+    position: 'absolute',
+  },
+  optionSection: {
+    gap: spacing.sm,
+  },
+  optionChipGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
+  },
+  choiceChip: {
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  choiceChipActive: {
+    backgroundColor: colors.ink,
+    borderColor: colors.ink,
+  },
+  choiceChipText: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  choiceChipTextActive: {
+    color: colors.panel,
+  },
+  swatchChoiceChip: {
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   routineCard: {
     backgroundColor: colors.panel,
