@@ -19,7 +19,7 @@ import {
   routinePresets,
   setlogFrames,
 } from './src/data/mockData';
-import { RecommendationResult, Routine, ScreenName } from './src/models/types';
+import { RecommendationResult, Routine, RoutineType, ScreenName, SetlogFrame } from './src/models/types';
 import { colors, radius, spacing } from './src/theme/tokens';
 
 type OnboardingAnswerMap = Record<string, string>;
@@ -29,9 +29,10 @@ interface PersistedAppState {
   currentRoutineId: string;
   onboardingAnswers: OnboardingAnswerMap;
   recommendation: RecommendationResult;
+  frames: SetlogFrame[];
 }
 
-const STORAGE_KEY = 'roonary:mvp1-state-ko-v2';
+const STORAGE_KEY = 'roonary:mvp1-state-ko-v3';
 
 const onboardingQuestions = [
   {
@@ -88,11 +89,13 @@ export default function App() {
   const [recommendation, setRecommendation] =
     useState<RecommendationResult>(defaultRecommendation);
   const [currentRoutineId, setCurrentRoutineId] = useState('routine-code');
+  const [frames, setFrames] = useState<SetlogFrame[]>(setlogFrames);
 
   const currentRoutine = useMemo(
     () => routinePresets.find((routine) => routine.id === currentRoutineId) ?? routinePresets[0],
     [currentRoutineId],
   );
+  const latestFrame = useMemo(() => getLatestFrame(frames), [frames]);
 
   useEffect(() => {
     let mounted = true;
@@ -110,6 +113,7 @@ export default function App() {
           setCurrentRoutineId(saved.currentRoutineId);
           setOnboardingAnswers(saved.onboardingAnswers);
           setRecommendation(saved.recommendation);
+          setFrames(saved.frames?.length ? saved.frames : setlogFrames);
           setScreen(saved.onboardingCompleted ? 'room' : 'onboarding');
         }
       } catch {
@@ -146,6 +150,7 @@ export default function App() {
       currentRoutineId,
       onboardingAnswers,
       recommendation,
+      frames,
     };
     setOnboardingCompleted(true);
     await persist(nextState);
@@ -160,6 +165,36 @@ export default function App() {
         currentRoutineId: routineId,
         onboardingAnswers,
         recommendation,
+        frames,
+      });
+    }
+  };
+
+  const generateFrame = async () => {
+    const nextFrame = createSetlogFrame(currentRoutine, recommendation, frames.length);
+    const nextFrames = [nextFrame, ...frames];
+    setFrames(nextFrames);
+
+    if (onboardingCompleted) {
+      await persist({
+        onboardingCompleted,
+        currentRoutineId,
+        onboardingAnswers,
+        recommendation,
+        frames: nextFrames,
+      });
+    }
+  };
+
+  const resetFrames = async () => {
+    setFrames(setlogFrames);
+    if (onboardingCompleted) {
+      await persist({
+        onboardingCompleted,
+        currentRoutineId,
+        onboardingAnswers,
+        recommendation,
+        frames: setlogFrames,
       });
     }
   };
@@ -170,6 +205,7 @@ export default function App() {
     setOnboardingAnswers({});
     setRecommendation(defaultRecommendation);
     setCurrentRoutineId('routine-code');
+    setFrames(setlogFrames);
     open('onboarding');
   };
 
@@ -208,8 +244,11 @@ export default function App() {
             <RoomScreen
               currentRoutine={currentRoutine}
               recommendation={recommendation}
+              latestFrame={latestFrame}
+              frameCount={frames.length}
               onRoutinePress={() => open('routine')}
               onReplayPress={() => open('replay')}
+              onGenerateFrame={generateFrame}
             />
           )}
           {screen === 'routine' && (
@@ -219,7 +258,7 @@ export default function App() {
               onDone={() => open('room')}
             />
           )}
-          {screen === 'replay' && <ReplayScreen />}
+          {screen === 'replay' && <ReplayScreen frames={frames} onResetFrames={resetFrames} />}
           {screen === 'closet' && (
             <PlaceholderScreen
               title="옷장"
@@ -327,7 +366,7 @@ function RecommendationScreen({
       <Text style={styles.kicker}>추천 결과</Text>
       <Text style={styles.heroTitle}>{recommendation.presetLabel}</Text>
       <View style={styles.recommendationCard}>
-        <RoomIllustration routineLabel="계획" recommendation={recommendation} />
+        <RoomIllustration routineLabel="계획" routineType="plan" recommendation={recommendation} />
         <MetricRow label="캐릭터" value={recommendation.animalLabel} />
         <MetricRow label="기본 색상" value={recommendation.colorLabel} />
         <MetricRow label="방 테마" value={recommendation.roomThemeLabel} />
@@ -341,18 +380,25 @@ function RecommendationScreen({
 function RoomScreen({
   currentRoutine,
   recommendation,
+  latestFrame,
+  frameCount,
   onRoutinePress,
   onReplayPress,
+  onGenerateFrame,
 }: {
   currentRoutine: Routine;
   recommendation: RecommendationResult;
+  latestFrame: SetlogFrame;
+  frameCount: number;
   onRoutinePress: () => void;
   onReplayPress: () => void;
+  onGenerateFrame: () => void;
 }) {
   return (
     <View style={styles.roomExperience}>
       <RoomIllustration
         routineLabel={currentRoutine.title}
+        routineType={currentRoutine.type}
         recommendation={recommendation}
         size="large"
       />
@@ -373,7 +419,12 @@ function RoomScreen({
           <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
         </View>
         <Text style={styles.bodyText}>{recommendation.stateLabel}</Text>
+        <View style={styles.roomMetaRow}>
+          <Text style={styles.subtleText}>최근 프레임 {latestFrame.timestamp}</Text>
+          <Text style={styles.subtleText}>총 {frameCount}개</Text>
+        </View>
         <View style={styles.buttonRow}>
+          <SecondaryButton label="프레임 생성" onPress={onGenerateFrame} />
           <SecondaryButton label="루틴 설정" onPress={onRoutinePress} />
           <SecondaryButton label="데일리 리플레이" onPress={onReplayPress} />
         </View>
@@ -418,20 +469,29 @@ function RoutineScreen({
   );
 }
 
-function ReplayScreen() {
+function ReplayScreen({
+  frames,
+  onResetFrames,
+}: {
+  frames: SetlogFrame[];
+  onResetFrames: () => void;
+}) {
+  const replaySummary = buildReplaySummary(frames);
+  const replayStats = buildReplayStats(frames);
+
   return (
     <View style={styles.stack}>
       <Text style={styles.kicker}>데일리 리플레이</Text>
       <Text style={styles.heroTitle}>{dailyReplay.date}</Text>
       <View style={styles.statsGrid}>
-        <StatCard label="방 EXP" value={`+${dailyReplay.stats.roomExp}`} />
-        <StatCard label="집중" value={`+${dailyReplay.stats.focus}`} />
-        <StatCard label="회복" value={`+${dailyReplay.stats.wellness}`} />
-        <StatCard label="창작" value={`+${dailyReplay.stats.creativity}`} />
+        <StatCard label="방 EXP" value={`+${replayStats.roomExp}`} />
+        <StatCard label="집중" value={`+${replayStats.focus}`} />
+        <StatCard label="회복" value={`+${replayStats.wellness}`} />
+        <StatCard label="창작" value={`+${replayStats.creativity}`} />
       </View>
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>루틴 요약</Text>
-        {dailyReplay.routineSummary.map((summary) => (
+        {replaySummary.map((summary) => (
           <MetricRow
             key={summary.routineType}
             label={routineLabels[summary.routineType]}
@@ -441,7 +501,7 @@ function ReplayScreen() {
       </View>
       <View style={styles.panel}>
         <Text style={styles.panelTitle}>생성된 프레임</Text>
-        {setlogFrames.map((frame) => (
+        {frames.map((frame) => (
           <View key={frame.id} style={styles.timelineRow}>
             <Text style={styles.frameTime}>{frame.timestamp}</Text>
             <Text style={styles.timelineText}>
@@ -450,6 +510,7 @@ function ReplayScreen() {
           </View>
         ))}
       </View>
+      <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
     </View>
   );
 }
@@ -484,14 +545,17 @@ function PlaceholderScreen({
 
 function RoomIllustration({
   routineLabel,
+  routineType,
   recommendation,
   size = 'normal',
 }: {
   routineLabel: string;
+  routineType: RoutineType;
   recommendation: RecommendationResult;
   size?: 'normal' | 'large';
 }) {
   const roomColor = roomThemeColor(recommendation.roomTheme);
+  const scene = routineSceneMap[routineType];
 
   return (
     <View
@@ -539,6 +603,14 @@ function RoomIllustration({
         <View style={[styles.plantLeaf, size === 'large' && styles.plantLeafLarge]} />
         <View style={[styles.plantPot, size === 'large' && styles.plantPotLarge]} />
       </View>
+      <View style={[styles.routineProp, size === 'large' && styles.routinePropLarge, scene.propStyle]}>
+        <Text style={[styles.routinePropText, size === 'large' && styles.routinePropTextLarge]}>
+          {scene.symbol}
+        </Text>
+      </View>
+      <Text style={[styles.sceneActionLabel, size === 'large' && styles.sceneActionLabelLarge]}>
+        {scene.label}
+      </Text>
       {size !== 'large' && (
         <>
           <Text style={styles.sceneCaption}>{routineLabel}</Text>
@@ -642,6 +714,118 @@ function buildRecommendation(answers: OnboardingAnswerMap): RecommendationResult
 
   return recommendationProfiles[winningKey] ?? defaultRecommendation;
 }
+
+function createSetlogFrame(
+  routine: Routine,
+  recommendation: RecommendationResult,
+  frameIndex: number,
+): SetlogFrame {
+  const now = new Date();
+  const timestamp = new Intl.DateTimeFormat('ko-KR', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(now);
+  const variation = routineVariations[routine.type][frameIndex % routineVariations[routine.type].length];
+
+  return {
+    id: `frame-${Date.now()}`,
+    type: 'my',
+    userId: 'user-yujin',
+    timestamp,
+    routineType: routine.type,
+    routineStatus: routine.status,
+    sceneLabel: `${recommendation.roomThemeLabel}에서 ${routine.title}`,
+    variationLabel: variation,
+    roomTheme: recommendation.roomTheme,
+  };
+}
+
+function buildReplaySummary(frames: SetlogFrame[]) {
+  const totals = frames.reduce<Partial<Record<RoutineType, number>>>((acc, frame) => {
+    acc[frame.routineType] = (acc[frame.routineType] ?? 0) + 60;
+    return acc;
+  }, {});
+
+  return Object.entries(totals).map(([routineType, totalMinutes]) => ({
+    routineType: routineType as RoutineType,
+    totalMinutes: totalMinutes ?? 0,
+    status: 'partial' as const,
+  }));
+}
+
+function buildReplayStats(frames: SetlogFrame[]) {
+  const focusFrames = frames.filter((frame) =>
+    ['code_work', 'read', 'plan', 'review'].includes(frame.routineType),
+  ).length;
+  const wellnessFrames = frames.filter((frame) =>
+    ['rest', 'workout'].includes(frame.routineType),
+  ).length;
+  const creativityFrames = frames.filter((frame) => frame.routineType === 'create').length;
+
+  return {
+    roomExp: frames.length * 8,
+    focus: focusFrames * 4,
+    wellness: wellnessFrames * 4,
+    creativity: creativityFrames * 5,
+  };
+}
+
+function getLatestFrame(frames: SetlogFrame[]) {
+  const generatedFrame = frames.find((frame) => !/^frame-\d{4}$/.test(frame.id));
+  return generatedFrame ?? frames[frames.length - 1] ?? setlogFrames[setlogFrames.length - 1];
+}
+
+const routineVariations: Record<RoutineType, string[]> = {
+  code_work: ['노트북 집중', '커피 옆 타이핑', '작업 보드 정리'],
+  read: ['소파 독서', '차와 함께 책 읽기', '책장 앞 메모'],
+  workout: ['가벼운 스트레칭', '매트 운동', '물 마시기'],
+  plan: ['플래너 펼치기', '체크리스트 정리', '보드에 목표 적기'],
+  review: ['하루 로그 확인', '다이어리 정리', '책상 정리'],
+  create: ['아이디어 스케치', '도구 펼치기', '초안 다듬기'],
+  rest: ['차 마시기', '화분 옆 휴식', '담요 아래 쉬기'],
+};
+
+const routineSceneMap: Record<
+  RoutineType,
+  { label: string; symbol: string; propStyle: { backgroundColor: string } }
+> = {
+  code_work: {
+    label: '책상 집중',
+    symbol: '⌨',
+    propStyle: { backgroundColor: '#DCE7EA' },
+  },
+  read: {
+    label: '소파 독서',
+    symbol: '책',
+    propStyle: { backgroundColor: '#E8D8A8' },
+  },
+  workout: {
+    label: '매트 운동',
+    symbol: '매트',
+    propStyle: { backgroundColor: '#BFD7B5' },
+  },
+  plan: {
+    label: '계획 정리',
+    symbol: '체크',
+    propStyle: { backgroundColor: '#DFE8CF' },
+  },
+  review: {
+    label: '회고 기록',
+    symbol: '로그',
+    propStyle: { backgroundColor: '#E8D6C8' },
+  },
+  create: {
+    label: '창작 도구',
+    symbol: '펜',
+    propStyle: { backgroundColor: '#E4D4EA' },
+  },
+  rest: {
+    label: '휴식 코너',
+    symbol: '차',
+    propStyle: { backgroundColor: '#EAD7C2' },
+  },
+};
 
 function roomThemeColor(roomTheme: RecommendationResult['roomTheme']) {
   const themes = {
@@ -887,6 +1071,11 @@ const styles = StyleSheet.create({
   roomDockText: {
     gap: spacing.xs,
   },
+  roomMetaRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
   statusBadge: {
     backgroundColor: '#EEF3EA',
     borderRadius: radius.sm,
@@ -1051,6 +1240,44 @@ const styles = StyleSheet.create({
   plantPotLarge: {
     height: 36,
     width: 44,
+  },
+  routineProp: {
+    alignItems: 'center',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    bottom: 84,
+    height: 34,
+    justifyContent: 'center',
+    left: 92,
+    position: 'absolute',
+    width: 54,
+  },
+  routinePropLarge: {
+    bottom: 370,
+    height: 44,
+    left: 76,
+    width: 74,
+  },
+  routinePropText: {
+    color: colors.ink,
+    fontSize: 11,
+    fontWeight: '900',
+  },
+  routinePropTextLarge: {
+    fontSize: 13,
+  },
+  sceneActionLabel: {
+    color: colors.muted,
+    fontSize: 11,
+    fontWeight: '800',
+    left: 154,
+    position: 'absolute',
+    top: 118,
+  },
+  sceneActionLabelLarge: {
+    left: 58,
+    top: 224,
   },
   sceneCaption: {
     bottom: 34,

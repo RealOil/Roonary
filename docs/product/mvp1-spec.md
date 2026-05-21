@@ -25,7 +25,8 @@ Onboarding
 My Room
 Today's Routine setup
 Routine-based character state
-Mock Setlog Frame list
+Seed Setlog Frame list
+Manual Setlog Frame generation
 Daily Replay
 Closet placeholder
 Archive placeholder
@@ -224,7 +225,8 @@ MVP 제약:
 기능:
 
 ```text
-mock Setlog Frame 목록 표시
+초기 seed Setlog Frame 목록 표시
+My Room에서 현재 루틴 기준 Setlog Frame 수동 생성
 시간, 루틴, 상태, variation 표시
 프레임 선택 시 간단 상세 표시
 ```
@@ -243,7 +245,7 @@ MVP 제약:
 
 ```text
 실제 매시 정각 자동 생성은 구현하지 않는다.
-우선 mock 데이터로 화면 경험을 검증한다.
+우선 seed 데이터와 수동 생성으로 화면 경험을 검증한다.
 ```
 
 ---
@@ -269,7 +271,7 @@ Archive 저장 상태
 기능:
 
 ```text
-오늘의 mock frame을 시간순으로 표시
+오늘 생성된 frame을 시간순으로 표시
 루틴별 총 시간/상태 표시
 My Room으로 돌아가기
 Archive placeholder로 이동
@@ -369,8 +371,9 @@ MVP 1은 다음이 가능하면 완료로 본다.
 My Room에 진입할 수 있다.
 오늘의 루틴을 선택할 수 있다.
 현재 루틴에 따라 캐릭터 상태가 바뀐다.
-mock Setlog Frame 목록을 볼 수 있다.
-Daily Replay 화면을 볼 수 있다.
+Setlog Frame 목록을 볼 수 있다.
+My Room에서 현재 루틴 기준 Setlog Frame을 생성할 수 있다.
+Daily Replay 화면에서 생성된 frame 기반 요약을 볼 수 있다.
 Closet/Archive placeholder를 볼 수 있다.
 ```
 

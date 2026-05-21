@@ -35,3 +35,6 @@ Removed: removed scope or files
 - Added Korean-first internal language policy to project docs.
 - Removed the onboarding record-style question.
 - Changed My Room to prioritize a large room scene over routine/frame lists.
+- Added manual Setlog Frame generation from the current routine.
+- Changed Daily Replay to summarize generated frames instead of a fixed replay mock.
+- Added routine-specific room scene props and labels.

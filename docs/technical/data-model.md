@@ -13,8 +13,8 @@ MVP 1은 서버 없이 mock/local data로 구현한다.
 단일 mock user
 단일 My Room
 프리셋 루틴
-mock Setlog Frames
-mock Daily Replay
+seed Setlog Frames
+generated local Daily Replay
 ```
 
 데이터 구조는 MVP 2에서 Shared Room, invite link, Group Replay를 붙일 수 있도록 너무 좁게 만들지 않는다.
@@ -201,8 +201,9 @@ User: Yujin
 Avatar: Quiet Planner owl, moss green
 Room: clean desk
 Today routines: Plan, Code / Work, Rest, Workout, Read
-Frames: 08:00, 10:00, 14:00, 18:00, 22:00
-Daily Replay: same frame list with routine summary
+Seed frames: 08:00, 10:00, 14:00, 18:00, 22:00
+Generated frames: appended locally from the current routine
+Daily Replay: generated frame list with calculated routine summary
 ```
 
 ---

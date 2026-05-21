@@ -13,8 +13,9 @@ Expo 앱을 실행한다.
 추천 결과를 확인한다.
 My Room에 들어간다.
 오늘의 루틴을 선택한다.
-mock Setlog Frame을 확인한다.
-Daily Replay를 확인한다.
+seed Setlog Frame을 확인한다.
+현재 루틴 기준 Setlog Frame을 수동 생성한다.
+생성된 frame 기반 Daily Replay를 확인한다.
 Closet/Archive placeholder를 확인한다.
 ```
 
@@ -146,13 +147,14 @@ Room scene area
 Small animal character representation
 Current routine state
 Today's routine list
-Recent Setlog Frames
+Recent Setlog Frame status
+Manual Setlog Frame generation action
 ```
 
 Done when:
 
 ```text
-The My Room screen shows the current routine and the character state changes when routine selection changes.
+The My Room screen shows the current routine, routine-specific room scene, and generated frame count.
 ```
 
 ### Step 5. Today's Routine
@@ -177,7 +179,7 @@ User can choose today's routines from presets and see them reflected in My Room.
 Build:
 
 ```text
-Routine Summary
+Routine Summary from generated frames
 Generated Frames timeline
 Simple stats
 Frame detail entry
@@ -186,7 +188,7 @@ Frame detail entry
 Done when:
 
 ```text
-Daily Replay presents the mock day as a log-like record.
+Daily Replay presents the generated frames as a log-like record.
 ```
 
 ### Step 7. Placeholders
