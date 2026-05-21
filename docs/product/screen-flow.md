@@ -182,15 +182,12 @@ Open Archive
 표시 정보:
 
 ```text
-루틴 프리셋 목록
-오늘 일정 목록
 현재 집중 루틴
-선택 여부
-현재 루틴 여부
-위젯 미리보기
-Routine Summary
-Generated Frames
-Room/Focus/Wellness/Creativity stats
+다음 일정/루틴
+오늘 진행도
+루틴 탭: 루틴 프리셋 목록, 선택 여부, 현재 루틴 여부
+일정 탭: 오늘 일정 목록
+로그 탭: Routine Summary, Generated Frames, Room/Focus/Wellness/Creativity stats
 ```
 
 이탈:

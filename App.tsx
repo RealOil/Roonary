@@ -419,110 +419,125 @@ function TodayScreen({
   onResetFrames: () => void;
   onDone: () => void;
 }) {
+  const [todayTab, setTodayTab] = useState<'routines' | 'schedule' | 'log'>('routines');
   const replaySummary = buildReplaySummary(frames);
   const replayStats = buildReplayStats(frames);
+  const completedRoutineCount = routinePresets.filter((routine) => routine.status === 'completed').length;
 
   return (
     <View style={styles.stack}>
       <Text style={styles.kicker}>오늘</Text>
       <Text style={styles.heroTitle}>오늘의 루틴과 일정을 방에 올려둘게요.</Text>
-      <View style={styles.panel}>
-        <View style={styles.sectionHeader}>
+      <View style={styles.todayHero}>
+        <View style={styles.todayHeroTop}>
           <View>
-            <Text style={styles.panelTitle}>지금 집중</Text>
-            <Text style={styles.subtleText}>현재 방에 반영되는 루틴</Text>
+            <Text style={styles.todayHeroLabel}>지금 집중</Text>
+            <Text style={styles.todayHeroTitle}>{currentRoutine.title}</Text>
+            <Text style={styles.todayHeroMeta}>
+              다음: {todayScheduleItems[0].time} {todayScheduleItems[0].title}
+            </Text>
           </View>
-          <View style={styles.statusBadge}>
-            <Text style={styles.statusText}>{statusLabel(currentRoutine.status)}</Text>
+          <View style={styles.todayProgressBadge}>
+            <Text style={styles.todayProgressValue}>
+              {completedRoutineCount}/{routinePresets.length}
+            </Text>
+            <Text style={styles.todayProgressLabel}>진행</Text>
           </View>
         </View>
-        <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
         <View style={styles.buttonRow}>
           <SecondaryButton
             label={`${currentRoutine.title} 프레임 생성`}
             onPress={onGenerateFrame}
           />
-          <SecondaryButton label="프레임 초기화" onPress={onResetFrames} />
         </View>
       </View>
 
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>오늘 루틴</Text>
-        {routinePresets.map((routine) => {
-          const selected = routine.id === currentRoutineId;
-          return (
-            <Pressable
-              key={routine.id}
-              style={[styles.selectRow, selected && styles.selectRowActive]}
-              onPress={() => onSelectRoutine(routine.id)}
-            >
-              <View>
-                <Text style={styles.cardTitle}>{routine.title}</Text>
-                <Text style={styles.subtleText}>{routine.estimatedMinutes}분 프리셋</Text>
+      <CategoryTabs
+        items={[
+          { label: '루틴', value: 'routines' },
+          { label: '일정', value: 'schedule' },
+          { label: '로그', value: 'log' },
+        ]}
+        current={todayTab}
+        onChange={setTodayTab}
+      />
+      {todayTab === 'routines' && (
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>오늘 루틴</Text>
+          {routinePresets.map((routine) => {
+            const selected = routine.id === currentRoutineId;
+            return (
+              <Pressable
+                key={routine.id}
+                style={[styles.selectRow, selected && styles.selectRowActive]}
+                onPress={() => onSelectRoutine(routine.id)}
+              >
+                <View>
+                  <Text style={styles.cardTitle}>{routine.title}</Text>
+                  <Text style={styles.subtleText}>{routine.estimatedMinutes}분 프리셋</Text>
+                </View>
+                <Text style={selected ? styles.selectedText : styles.subtleText}>
+                  {selected ? '현재 집중' : statusLabel(routine.status)}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      )}
+      {todayTab === 'schedule' && (
+        <View style={styles.panel}>
+          <Text style={styles.panelTitle}>오늘 일정</Text>
+          {todayScheduleItems.map((item) => (
+            <View key={item.id} style={styles.scheduleRow}>
+              <Text style={styles.scheduleTime}>{item.time}</Text>
+              <View style={styles.scheduleTextBlock}>
+                <Text style={styles.cardTitle}>{item.title}</Text>
+                <Text style={styles.subtleText}>{item.type}</Text>
               </View>
-              <Text style={selected ? styles.selectedText : styles.subtleText}>
-                {selected ? '현재 집중' : statusLabel(routine.status)}
-              </Text>
-            </Pressable>
-          );
-        })}
-      </View>
-
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>오늘 일정</Text>
-        {todayScheduleItems.map((item) => (
-          <View key={item.id} style={styles.scheduleRow}>
-            <Text style={styles.scheduleTime}>{item.time}</Text>
-            <View style={styles.scheduleTextBlock}>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.subtleText}>{item.type}</Text>
             </View>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.widgetPreview}>
-        <View>
-          <Text style={styles.widgetKicker}>위젯 미리보기</Text>
-          <Text style={styles.widgetTitle}>{currentRoutine.title}</Text>
-          <Text style={styles.subtleText}>다음: {todayScheduleItems[0].time} {todayScheduleItems[0].title}</Text>
+          ))}
+          <Text style={styles.subtleText}>반복 루틴과 캘린더 연동은 다음 단계에서 확장합니다.</Text>
         </View>
-        <View style={styles.widgetRoomDot} />
-      </View>
-
-      <PrimaryButton label="내 방으로 돌아가기" onPress={onDone} />
-
-      <View style={styles.sectionDivider} />
-
-      <Text style={styles.kicker}>오늘 로그</Text>
-      <Text style={styles.sectionTitle}>{dailyReplay.date}</Text>
-      <View style={styles.statsGrid}>
-        <StatCard label="방 EXP" value={`+${replayStats.roomExp}`} />
-        <StatCard label="집중" value={`+${replayStats.focus}`} />
-        <StatCard label="회복" value={`+${replayStats.wellness}`} />
-        <StatCard label="창작" value={`+${replayStats.creativity}`} />
-      </View>
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>루틴 요약</Text>
-        {replaySummary.map((summary) => (
-          <MetricRow
-            key={summary.routineType}
-            label={routineLabels[summary.routineType]}
-            value={`${summary.totalMinutes}분 / ${summaryStatusLabel(summary.status)}`}
-          />
-        ))}
-      </View>
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>생성된 프레임</Text>
-        {frames.map((frame) => (
-          <View key={frame.id} style={styles.timelineRow}>
-            <Text style={styles.frameTime}>{frame.timestamp}</Text>
-            <Text style={styles.timelineText}>
-              {routineLabels[frame.routineType]} - {frame.variationLabel}
-            </Text>
+      )}
+      {todayTab === 'log' && (
+        <View style={styles.stack}>
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.kicker}>오늘 로그</Text>
+              <Text style={styles.sectionTitle}>{dailyReplay.date}</Text>
+            </View>
+            <SecondaryButton label="초기화" onPress={onResetFrames} />
           </View>
-        ))}
-      </View>
+          <View style={styles.statsGrid}>
+            <StatCard label="방 EXP" value={`+${replayStats.roomExp}`} />
+            <StatCard label="집중" value={`+${replayStats.focus}`} />
+            <StatCard label="회복" value={`+${replayStats.wellness}`} />
+            <StatCard label="창작" value={`+${replayStats.creativity}`} />
+          </View>
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>루틴 요약</Text>
+            {replaySummary.map((summary) => (
+              <MetricRow
+                key={summary.routineType}
+                label={routineLabels[summary.routineType]}
+                value={`${summary.totalMinutes}분 / ${summaryStatusLabel(summary.status)}`}
+              />
+            ))}
+          </View>
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>생성된 프레임</Text>
+            {frames.map((frame) => (
+              <View key={frame.id} style={styles.timelineRow}>
+                <Text style={styles.frameTime}>{frame.timestamp}</Text>
+                <Text style={styles.timelineText}>
+                  {routineLabels[frame.routineType]} - {frame.variationLabel}
+                </Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      )}
+      <PrimaryButton label="내 방으로 돌아가기" onPress={onDone} />
     </View>
   );
 }
@@ -1516,6 +1531,57 @@ const styles = StyleSheet.create({
     color: colors.ink,
     fontSize: 15,
     fontWeight: '900',
+  },
+  todayHero: {
+    backgroundColor: colors.ink,
+    borderRadius: radius.md,
+    gap: spacing.lg,
+    padding: spacing.lg,
+  },
+  todayHeroTop: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+  },
+  todayHeroLabel: {
+    color: '#BFD7B5',
+    fontSize: 12,
+    fontWeight: '900',
+  },
+  todayHeroTitle: {
+    color: colors.panel,
+    fontSize: 28,
+    fontWeight: '900',
+    lineHeight: 34,
+    marginTop: spacing.xs,
+  },
+  todayHeroMeta: {
+    color: '#D8CFC1',
+    fontSize: 13,
+    fontWeight: '700',
+    lineHeight: 18,
+    marginTop: spacing.xs,
+  },
+  todayProgressBadge: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 249, 240, 0.12)',
+    borderColor: 'rgba(255, 249, 240, 0.28)',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    minWidth: 62,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  todayProgressValue: {
+    color: colors.panel,
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  todayProgressLabel: {
+    color: '#BFD7B5',
+    fontSize: 11,
+    fontWeight: '800',
   },
   statusBadge: {
     backgroundColor: '#EEF3EA',

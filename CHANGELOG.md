@@ -50,3 +50,4 @@ Removed: removed scope or files
 - Documented future layered PNG/WebP asset direction for room, character, outfit, prop, and routine object graphics.
 - Documented product direction toward recurring routines, schedules/calendar, focus sessions, and future widgets.
 - Changed the Routine screen into a Today screen with focus session, daily schedule, widget preview, and Today Log sections.
+- Changed Today from a long stacked page to a compact dashboard with Routine, Schedule, and Log tabs.
