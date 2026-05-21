@@ -951,6 +951,14 @@ Public feed
 
 ### MVP 2: Shared Room and Group Replay
 
+Roadmap note:
+
+```text
+Roonary의 최종 방향은 단순 집중 앱보다 루틴/일정 기반 하루 운영 앱에 가깝다.
+따라서 MVP 1 이후 우선순위는 검증 결과에 따라 조정할 수 있다.
+반복 루틴, 일정/캘린더, 모바일 위젯은 Shared Room보다 먼저 실험할 수 있다.
+```
+
 Goal:
 
 ```text
@@ -997,6 +1005,36 @@ More routine variations
 Weekly Replay
 Improved Archive
 Furniture-based variation unlocks
+```
+
+### Future: Routine, Calendar, and Widgets
+
+Goal:
+
+```text
+Turn Roonary from a session-based routine logger into a daily operating space for recurring routines, schedules, and lightweight focus sessions.
+```
+
+Included candidates:
+
+```text
+Recurring routines: daily, weekly, custom intervals
+One-off schedules
+Calendar-style day/week view
+Routine and schedule conflict handling
+Current focus session timer
+Upcoming routine/schedule reminders
+Mobile home-screen widgets
+Widget states for current routine, next routine/schedule, today progress, and small room/avatar status
+Optional external calendar integration after the internal model is stable
+```
+
+Product principle:
+
+```text
+Calendar features should not turn Roonary into a dense enterprise planner.
+The calendar exists to feed the room scene and daily log.
+The room remains the emotional and visual center.
 ```
 
 ---

@@ -48,3 +48,4 @@ Removed: removed scope or files
 - Changed Closet controls from stacked option groups to sub-tabs with color swatches and simple option icons.
 - Changed My Room and room customization preview from flat room blocks to a simple 2.5D corner-room composition.
 - Documented future layered PNG/WebP asset direction for room, character, outfit, prop, and routine object graphics.
+- Documented product direction toward recurring routines, schedules/calendar, focus sessions, and future widgets.
