@@ -31,6 +31,13 @@ Closet placeholder
 Archive placeholder
 ```
 
+언어 기준:
+
+```text
+앱 내부 표시 언어는 한국어로 고정한다.
+제품명 Roonary와 일부 약어(MVP, EXP)는 그대로 사용할 수 있다.
+```
+
 ---
 
 ## 3. MVP 1 제외 범위

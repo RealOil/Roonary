@@ -31,3 +31,5 @@ Removed: removed scope or files
 - Added persisted MVP 1 state with AsyncStorage.
 - Added selectable onboarding answers that drive character and room recommendations.
 - Added persisted current routine selection.
+- Changed MVP 1 app-facing language to Korean.
+- Added Korean-first internal language policy to project docs.

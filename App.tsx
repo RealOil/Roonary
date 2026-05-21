@@ -31,62 +31,62 @@ interface PersistedAppState {
   recommendation: RecommendationResult;
 }
 
-const STORAGE_KEY = 'roonary:mvp1-state';
+const STORAGE_KEY = 'roonary:mvp1-state-ko-v1';
 
 const onboardingQuestions = [
   {
     id: 'start',
-    title: 'Start style',
-    prompt: 'What feels best when the day begins?',
+    title: '시작 방식',
+    prompt: '하루를 시작할 때 더 끌리는 것은?',
     options: [
-      { id: 'planner', label: 'Quiet plan' },
-      { id: 'starter', label: 'Move first' },
-      { id: 'buddy', label: 'Start together' },
-      { id: 'cozy', label: 'Set the room' },
+      { id: 'planner', label: '조용히 계획하기' },
+      { id: 'starter', label: '바로 움직이기' },
+      { id: 'buddy', label: '같이 시작하기' },
+      { id: 'cozy', label: '분위기 정리하기' },
     ],
   },
   {
     id: 'space',
-    title: 'Focus space',
-    prompt: 'Where does focus feel easiest?',
+    title: '집중 공간',
+    prompt: '집중이 잘 되는 공간은?',
     options: [
-      { id: 'planner', label: 'Clean desk' },
-      { id: 'cozy', label: 'Cozy room' },
-      { id: 'buddy', label: 'Quiet cafe' },
-      { id: 'deep', label: 'Night studio' },
+      { id: 'planner', label: '깔끔한 책상' },
+      { id: 'cozy', label: '포근한 방' },
+      { id: 'buddy', label: '조용한 카페' },
+      { id: 'deep', label: '밤의 작업실' },
     ],
   },
   {
     id: 'reset',
-    title: 'Reset cue',
-    prompt: 'What helps after a missed routine?',
+    title: '다시 시작',
+    prompt: '루틴이 실패했을 때 나에게 필요한 것은?',
     options: [
-      { id: 'planner', label: 'Checkpoint' },
-      { id: 'restorer', label: 'Soft break' },
-      { id: 'starter', label: 'Small reward' },
-      { id: 'buddy', label: 'Room buddy' },
+      { id: 'planner', label: '체크포인트' },
+      { id: 'restorer', label: '부담 없는 휴식' },
+      { id: 'starter', label: '작은 보상' },
+      { id: 'buddy', label: '같이 하는 사람' },
     ],
   },
   {
     id: 'record',
-    title: 'Record style',
-    prompt: 'Which record would you most likely revisit?',
+    title: '기록 방식',
+    prompt: '나중에 다시 보고 싶은 기록은?',
     options: [
-      { id: 'planner', label: 'Clear timeline' },
-      { id: 'starter', label: 'Completion score' },
-      { id: 'cozy', label: 'Room scene' },
-      { id: 'buddy', label: 'Shared result' },
+      { id: 'planner', label: '선명한 타임라인' },
+      { id: 'starter', label: '완료 요약' },
+      { id: 'cozy', label: '방 장면' },
+      { id: 'buddy', label: '공유 결과물' },
     ],
   },
   {
     id: 'firstRoutine',
-    title: 'First routine',
-    prompt: 'What should Roonary help with first?',
+    title: '첫 루틴',
+    prompt: 'Roonary가 가장 먼저 도와줬으면 하는 루틴은?',
     options: [
-      { id: 'deep', label: 'Work / study' },
-      { id: 'cozy', label: 'Reading' },
-      { id: 'restorer', label: 'Wellness' },
-      { id: 'planner', label: 'Plan / review' },
+      { id: 'deep', label: '업무 / 공부' },
+      { id: 'cozy', label: '독서' },
+      { id: 'restorer', label: '운동 / 회복' },
+      { id: 'planner', label: '계획 / 회고' },
     ],
   },
 ];
@@ -190,7 +190,7 @@ export default function App() {
         <StatusBar style="dark" />
         <View style={styles.loadingShell}>
           <Text style={styles.brand}>Roonary</Text>
-          <Text style={styles.headerTitle}>Loading room...</Text>
+          <Text style={styles.headerTitle}>방을 여는 중...</Text>
         </View>
       </SafeAreaView>
     );
@@ -231,14 +231,14 @@ export default function App() {
           {screen === 'replay' && <ReplayScreen />}
           {screen === 'closet' && (
             <PlaceholderScreen
-              title="Closet"
+              title="옷장"
               recommendation={recommendation}
               onReset={resetOnboarding}
             />
           )}
           {screen === 'archive' && (
             <PlaceholderScreen
-              title="Archive"
+              title="아카이브"
               recommendation={recommendation}
               onReset={resetOnboarding}
             />
@@ -253,7 +253,7 @@ export default function App() {
 }
 
 function Header({ screen, onHome }: { screen: ScreenName; onHome: () => void }) {
-  const title = screen === 'room' ? 'My Room' : screenTitle(screen);
+  const title = screen === 'room' ? '내 방' : screenTitle(screen);
 
   return (
     <View style={styles.header}>
@@ -263,7 +263,7 @@ function Header({ screen, onHome }: { screen: ScreenName; onHome: () => void }) 
       </View>
       {screen !== 'onboarding' && (
         <Pressable style={styles.ghostButton} onPress={onHome}>
-          <Text style={styles.ghostButtonText}>Room</Text>
+          <Text style={styles.ghostButtonText}>방</Text>
         </Pressable>
       )}
     </View>
@@ -284,17 +284,17 @@ function OnboardingScreen({
 
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>MVP 1 onboarding</Text>
-      <Text style={styles.heroTitle}>Find the first room shape for your routine.</Text>
+      <Text style={styles.kicker}>MVP 1 온보딩</Text>
+      <Text style={styles.heroTitle}>내 루틴에 맞는 첫 방을 찾아볼게요.</Text>
       <Text style={styles.bodyText}>
-        Pick one option per prompt. The first MVP uses these choices to recommend a character,
-        room theme, and starting routine set.
+        질문마다 하나씩 골라주세요. 선택 결과를 바탕으로 캐릭터, 방 테마, 추천 루틴을
+        제안합니다.
       </Text>
       {onboardingQuestions.map((question) => (
         <View key={question.id} style={styles.panel}>
           <View style={styles.questionHeader}>
             <Text style={styles.panelTitle}>{question.title}</Text>
-            <Text style={styles.subtleText}>{answers[question.id] ? 'Selected' : 'Required'}</Text>
+            <Text style={styles.subtleText}>{answers[question.id] ? '선택됨' : '필수'}</Text>
           </View>
           <Text style={styles.bodyText}>{question.prompt}</Text>
           <View style={styles.optionGrid}>
@@ -317,7 +317,7 @@ function OnboardingScreen({
       ))}
       <PrimaryButton
         disabled={!canContinue}
-        label={canContinue ? 'View recommendation' : `${answeredCount}/5 answered`}
+        label={canContinue ? '추천 결과 보기' : `${answeredCount}/5 선택됨`}
         onPress={onDone}
       />
     </View>
@@ -333,16 +333,16 @@ function RecommendationScreen({
 }) {
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>Recommendation</Text>
+      <Text style={styles.kicker}>추천 결과</Text>
       <Text style={styles.heroTitle}>{recommendation.presetLabel}</Text>
       <View style={styles.recommendationCard}>
-        <RoomIllustration routineLabel="Plan" recommendation={recommendation} />
-        <MetricRow label="Animal" value={recommendation.animalLabel} />
-        <MetricRow label="Base color" value={recommendation.colorLabel} />
-        <MetricRow label="Room theme" value={recommendation.roomThemeLabel} />
-        <MetricRow label="Routine presets" value={recommendation.routines.join(', ')} />
+        <RoomIllustration routineLabel="계획" recommendation={recommendation} />
+        <MetricRow label="캐릭터" value={recommendation.animalLabel} />
+        <MetricRow label="기본 색상" value={recommendation.colorLabel} />
+        <MetricRow label="방 테마" value={recommendation.roomThemeLabel} />
+        <MetricRow label="추천 루틴" value={recommendation.routines.join(', ')} />
       </View>
-      <PrimaryButton label="Enter My Room" onPress={onAccept} />
+      <PrimaryButton label="내 방으로 들어가기" onPress={onAccept} />
     </View>
   );
 }
@@ -365,41 +365,41 @@ function RoomScreen({
       <View style={styles.roomTopline}>
         <View>
           <Text style={styles.kicker}>{formatTodayLabel()}</Text>
-          <Text style={styles.heroTitle}>My Room</Text>
+          <Text style={styles.heroTitle}>내 방</Text>
         </View>
         <View style={styles.statusBadge}>
-          <Text style={styles.statusText}>{currentRoutine.status}</Text>
+          <Text style={styles.statusText}>{statusLabel(currentRoutine.status)}</Text>
         </View>
       </View>
 
       <RoomIllustration routineLabel={currentRoutine.title} recommendation={recommendation} />
 
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Current routine</Text>
+        <Text style={styles.panelTitle}>현재 루틴</Text>
         <Text style={styles.bigRoutine}>{currentRoutine.title}</Text>
         <Text style={styles.bodyText}>{recommendation.stateLabel}</Text>
         <View style={styles.buttonRow}>
-          <SecondaryButton label="Set routine" onPress={onRoutinePress} />
-          <SecondaryButton label="Daily Replay" onPress={onReplayPress} />
+          <SecondaryButton label="루틴 설정" onPress={onRoutinePress} />
+          <SecondaryButton label="데일리 리플레이" onPress={onReplayPress} />
         </View>
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Today routines</Text>
-        <Text style={styles.subtleText}>{routinePresets.length} presets</Text>
+        <Text style={styles.sectionTitle}>오늘의 루틴</Text>
+        <Text style={styles.subtleText}>{routinePresets.length}개 프리셋</Text>
       </View>
       <View style={styles.cardGrid}>
         {routinePresets.map((routine) => (
           <View key={routine.id} style={styles.routineCard}>
             <Text style={styles.cardTitle}>{routine.title}</Text>
-            <Text style={styles.subtleText}>{routine.status}</Text>
+            <Text style={styles.subtleText}>{statusLabel(routine.status)}</Text>
           </View>
         ))}
       </View>
 
       <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Setlog Frames</Text>
-        <Text style={styles.subtleText}>mock data</Text>
+        <Text style={styles.sectionTitle}>셋로그 프레임</Text>
+        <Text style={styles.subtleText}>임시 데이터</Text>
       </View>
       {setlogFrames.slice(0, 3).map((frame) => (
         <Pressable key={frame.id} style={styles.frameRow} onPress={onFramePress}>
@@ -425,8 +425,8 @@ function RoutineScreen({
 }) {
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>Today routine setup</Text>
-      <Text style={styles.heroTitle}>Choose the routine your room should show now.</Text>
+      <Text style={styles.kicker}>오늘의 루틴 설정</Text>
+      <Text style={styles.heroTitle}>지금 방에 보여줄 루틴을 골라주세요.</Text>
       {routinePresets.map((routine) => {
         const selected = routine.id === currentRoutineId;
         return (
@@ -437,15 +437,15 @@ function RoutineScreen({
           >
             <View>
               <Text style={styles.cardTitle}>{routine.title}</Text>
-              <Text style={styles.subtleText}>{routine.estimatedMinutes} min preset</Text>
+              <Text style={styles.subtleText}>{routine.estimatedMinutes}분 프리셋</Text>
             </View>
             <Text style={selected ? styles.selectedText : styles.subtleText}>
-              {selected ? 'Current' : routine.status}
+              {selected ? '현재 선택' : statusLabel(routine.status)}
             </Text>
           </Pressable>
         );
       })}
-      <PrimaryButton label="Back to My Room" onPress={onDone} />
+      <PrimaryButton label="내 방으로 돌아가기" onPress={onDone} />
     </View>
   );
 }
@@ -453,26 +453,26 @@ function RoutineScreen({
 function ReplayScreen() {
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>Daily Replay</Text>
+      <Text style={styles.kicker}>데일리 리플레이</Text>
       <Text style={styles.heroTitle}>{dailyReplay.date}</Text>
       <View style={styles.statsGrid}>
-        <StatCard label="Room EXP" value={`+${dailyReplay.stats.roomExp}`} />
-        <StatCard label="Focus" value={`+${dailyReplay.stats.focus}`} />
-        <StatCard label="Wellness" value={`+${dailyReplay.stats.wellness}`} />
-        <StatCard label="Creativity" value={`+${dailyReplay.stats.creativity}`} />
+        <StatCard label="방 EXP" value={`+${dailyReplay.stats.roomExp}`} />
+        <StatCard label="집중" value={`+${dailyReplay.stats.focus}`} />
+        <StatCard label="회복" value={`+${dailyReplay.stats.wellness}`} />
+        <StatCard label="창작" value={`+${dailyReplay.stats.creativity}`} />
       </View>
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Routine Summary</Text>
+        <Text style={styles.panelTitle}>루틴 요약</Text>
         {dailyReplay.routineSummary.map((summary) => (
           <MetricRow
             key={summary.routineType}
             label={routineLabels[summary.routineType]}
-            value={`${summary.totalMinutes}m / ${summary.status}`}
+            value={`${summary.totalMinutes}분 / ${summaryStatusLabel(summary.status)}`}
           />
         ))}
       </View>
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Generated Frames</Text>
+        <Text style={styles.panelTitle}>생성된 프레임</Text>
         {setlogFrames.map((frame) => (
           <View key={frame.id} style={styles.timelineRow}>
             <Text style={styles.frameTime}>{frame.timestamp}</Text>
@@ -495,21 +495,21 @@ function PlaceholderScreen({
   recommendation: RecommendationResult;
   onReset: () => void;
 }) {
-  const isCloset = title === 'Closet';
+  const isCloset = title === '옷장';
 
   return (
     <View style={styles.stack}>
-      <Text style={styles.kicker}>MVP 1 placeholder</Text>
+      <Text style={styles.kicker}>MVP 1 자리 표시</Text>
       <Text style={styles.heroTitle}>{title}</Text>
       <View style={styles.panel}>
-        <Text style={styles.panelTitle}>{isCloset ? 'Current character' : 'Saved records'}</Text>
+        <Text style={styles.panelTitle}>{isCloset ? '현재 캐릭터' : '저장된 기록'}</Text>
         <Text style={styles.bodyText}>
           {isCloset
-            ? `${recommendation.presetLabel} ${recommendation.animalLabel} / ${recommendation.colorLabel}. Outfits and props are reserved for a later MVP.`
-            : 'Today Daily Replay is visible here. Past replay filters are reserved for a later MVP.'}
+            ? `${recommendation.presetLabel} ${recommendation.animalLabel} / ${recommendation.colorLabel}. 의상과 소품은 다음 MVP에서 확장합니다.`
+            : '오늘의 데일리 리플레이가 이곳에 표시됩니다. 과거 기록 필터는 다음 MVP에서 확장합니다.'}
         </Text>
       </View>
-      {isCloset && <SecondaryButton label="Reset onboarding" onPress={onReset} />}
+      {isCloset && <SecondaryButton label="온보딩 다시 하기" onPress={onReset} />}
     </View>
   );
 }
@@ -555,11 +555,11 @@ function BottomNav({
   onNavigate: (screen: ScreenName) => void;
 }) {
   const items: { label: string; screen: ScreenName }[] = [
-    { label: 'Room', screen: 'room' },
-    { label: 'Routine', screen: 'routine' },
-    { label: 'Replay', screen: 'replay' },
-    { label: 'Closet', screen: 'closet' },
-    { label: 'Archive', screen: 'archive' },
+    { label: '방', screen: 'room' },
+    { label: '루틴', screen: 'routine' },
+    { label: '리플레이', screen: 'replay' },
+    { label: '옷장', screen: 'closet' },
+    { label: '아카이브', screen: 'archive' },
   ];
 
   return (
@@ -682,7 +682,7 @@ function roomThemeColor(roomTheme: RecommendationResult['roomTheme']) {
 }
 
 function formatTodayLabel() {
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat('ko-KR', {
     month: '2-digit',
     day: '2-digit',
     weekday: 'short',
@@ -691,16 +691,39 @@ function formatTodayLabel() {
 
 function screenTitle(screen: ScreenName) {
   const titles: Record<ScreenName, string> = {
-    onboarding: 'Onboarding',
-    recommendation: 'Recommendation',
-    room: 'My Room',
-    routine: 'Routine',
-    replay: 'Daily Replay',
-    closet: 'Closet',
-    archive: 'Archive',
+    onboarding: '온보딩',
+    recommendation: '추천 결과',
+    room: '내 방',
+    routine: '루틴',
+    replay: '데일리 리플레이',
+    closet: '옷장',
+    archive: '아카이브',
   };
 
   return titles[screen];
+}
+
+function statusLabel(status: Routine['status']) {
+  const labels: Record<Routine['status'], string> = {
+    planned: '예정',
+    active: '진행 중',
+    completed: '완료',
+    deferred: '미룸',
+    skipped: '건너뜀',
+  };
+
+  return labels[status];
+}
+
+function summaryStatusLabel(status: 'completed' | 'partial' | 'deferred' | 'skipped') {
+  const labels = {
+    completed: '완료',
+    partial: '일부 진행',
+    deferred: '미룸',
+    skipped: '건너뜀',
+  };
+
+  return labels[status];
 }
 
 const styles = StyleSheet.create({

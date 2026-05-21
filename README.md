@@ -33,6 +33,7 @@ Stage: MVP 1 app scaffold
 Target MVP: Mobile-first React Native + Expo app
 Backend: Not used in MVP 1
 Data: Mock/local data for MVP 1
+Internal product language: Korean
 ```
 
 ---
