@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
-import { type ReactNode, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Pressable,
   SafeAreaView,
@@ -500,6 +500,11 @@ function ClosetScreen({
   const wallpaperOptions = ['차분한 블루', '포근한 크림', '잎사귀 그린'];
   const floorOptions = ['밝은 나무', '차분한 회색', '따뜻한 코르크'];
   const furnitureOptions = uniqueLabels(['책상 세트', '소파 세트', '운동 매트', '책장 세트']);
+  const [characterCategory, setCharacterCategory] =
+    useState<'animal' | 'color' | 'outfit' | 'prop'>('animal');
+  const [roomCategory, setRoomCategory] = useState<'wallpaper' | 'floor' | 'furniture'>(
+    'wallpaper',
+  );
   const [selectedAnimal, setSelectedAnimal] = useState(animalOptions[0]);
   const [selectedColor, setSelectedColor] = useState(colorOptions[0]);
   const [selectedOutfit, setSelectedOutfit] = useState(outfitOptions[0]);
@@ -550,46 +555,48 @@ function ClosetScreen({
             outfit={selectedOutfit}
             prop={selectedProp}
           />
-          <OptionSection title="종">
-            {animalOptions.map((label) => (
-              <OptionChip
-                key={label}
-                label={label}
-                selected={selectedAnimal === label}
-                onPress={() => setSelectedAnimal(label)}
-              />
-            ))}
-          </OptionSection>
-          <OptionSection title="색">
-            {colorOptions.map((label) => (
-              <SwatchChip
-                key={label}
-                label={label}
-                selected={selectedColor === label}
-                onPress={() => setSelectedColor(label)}
-              />
-            ))}
-          </OptionSection>
-          <OptionSection title="옷">
-            {outfitOptions.map((label) => (
-              <OptionChip
-                key={label}
-                label={label}
-                selected={selectedOutfit === label}
-                onPress={() => setSelectedOutfit(label)}
-              />
-            ))}
-          </OptionSection>
-          <OptionSection title="소품">
-            {propOptions.map((label) => (
-              <OptionChip
-                key={label}
-                label={label}
-                selected={selectedProp === label}
-                onPress={() => setSelectedProp(label)}
-              />
-            ))}
-          </OptionSection>
+          <CategoryTabs
+            items={[
+              { label: '동물', value: 'animal' },
+              { label: '색상', value: 'color' },
+              { label: '의상', value: 'outfit' },
+              { label: '소품', value: 'prop' },
+            ]}
+            current={characterCategory}
+            onChange={setCharacterCategory}
+          />
+          {characterCategory === 'animal' && (
+            <OptionTileGrid
+              options={animalOptions}
+              selected={selectedAnimal}
+              iconType="animal"
+              onSelect={setSelectedAnimal}
+            />
+          )}
+          {characterCategory === 'color' && (
+            <OptionTileGrid
+              options={colorOptions}
+              selected={selectedColor}
+              iconType="color"
+              onSelect={setSelectedColor}
+            />
+          )}
+          {characterCategory === 'outfit' && (
+            <OptionTileGrid
+              options={outfitOptions}
+              selected={selectedOutfit}
+              iconType="outfit"
+              onSelect={setSelectedOutfit}
+            />
+          )}
+          {characterCategory === 'prop' && (
+            <OptionTileGrid
+              options={propOptions}
+              selected={selectedProp}
+              iconType="prop"
+              onSelect={setSelectedProp}
+            />
+          )}
         </View>
       ) : (
         <View style={styles.closetStack}>
@@ -598,36 +605,39 @@ function ClosetScreen({
             floor={selectedFloor}
             furniture={selectedFurniture}
           />
-          <OptionSection title="벽지 색">
-            {wallpaperOptions.map((label) => (
-              <SwatchChip
-                key={label}
-                label={label}
-                selected={selectedWallpaper === label}
-                onPress={() => setSelectedWallpaper(label)}
-              />
-            ))}
-          </OptionSection>
-          <OptionSection title="바닥">
-            {floorOptions.map((label) => (
-              <SwatchChip
-                key={label}
-                label={label}
-                selected={selectedFloor === label}
-                onPress={() => setSelectedFloor(label)}
-              />
-            ))}
-          </OptionSection>
-          <OptionSection title="가구">
-            {furnitureOptions.map((label) => (
-              <OptionChip
-                key={label}
-                label={label}
-                selected={selectedFurniture === label}
-                onPress={() => setSelectedFurniture(label)}
-              />
-            ))}
-          </OptionSection>
+          <CategoryTabs
+            items={[
+              { label: '벽지', value: 'wallpaper' },
+              { label: '바닥', value: 'floor' },
+              { label: '가구', value: 'furniture' },
+            ]}
+            current={roomCategory}
+            onChange={setRoomCategory}
+          />
+          {roomCategory === 'wallpaper' && (
+            <OptionTileGrid
+              options={wallpaperOptions}
+              selected={selectedWallpaper}
+              iconType="color"
+              onSelect={setSelectedWallpaper}
+            />
+          )}
+          {roomCategory === 'floor' && (
+            <OptionTileGrid
+              options={floorOptions}
+              selected={selectedFloor}
+              iconType="floor"
+              onSelect={setSelectedFloor}
+            />
+          )}
+          {roomCategory === 'furniture' && (
+            <OptionTileGrid
+              options={furnitureOptions}
+              selected={selectedFurniture}
+              iconType="furniture"
+              onSelect={setSelectedFurniture}
+            />
+          )}
         </View>
       )}
     </View>
@@ -694,51 +704,115 @@ function DecorRoomPreview({
   );
 }
 
-function OptionSection({ title, children }: { title: string; children: ReactNode }) {
+function CategoryTabs<T extends string>({
+  items,
+  current,
+  onChange,
+}: {
+  items: { label: string; value: T }[];
+  current: T;
+  onChange: (value: T) => void;
+}) {
   return (
-    <View style={styles.optionSection}>
-      <Text style={styles.panelTitle}>{title}</Text>
-      <View style={styles.optionChipGrid}>{children}</View>
+    <View style={styles.categoryTabs}>
+      {items.map((item) => {
+        const selected = item.value === current;
+        return (
+          <Pressable
+            key={item.value}
+            style={[styles.categoryTab, selected && styles.categoryTabActive]}
+            onPress={() => onChange(item.value)}
+          >
+            <Text style={[styles.categoryTabText, selected && styles.categoryTabTextActive]}>
+              {item.label}
+            </Text>
+          </Pressable>
+        );
+      })}
     </View>
   );
 }
 
-function OptionChip({
-  label,
+function OptionTileGrid({
+  options,
   selected,
-  onPress,
+  iconType,
+  onSelect,
 }: {
-  label: string;
-  selected: boolean;
-  onPress: () => void;
+  options: string[];
+  selected: string;
+  iconType: 'animal' | 'color' | 'outfit' | 'prop' | 'floor' | 'furniture';
+  onSelect: (label: string) => void;
 }) {
   return (
-    <Pressable
-      style={[styles.choiceChip, selected && styles.choiceChipActive]}
-      onPress={onPress}
-    >
-      <Text style={[styles.choiceChipText, selected && styles.choiceChipTextActive]}>{label}</Text>
-    </Pressable>
+    <View style={styles.optionTileGrid}>
+      {options.map((label) => {
+        const isSelected = selected === label;
+        return (
+          <Pressable
+            key={label}
+            style={[styles.optionTile, isSelected && styles.optionTileActive]}
+            onPress={() => onSelect(label)}
+          >
+            <OptionIcon type={iconType} label={label} />
+            <Text style={[styles.optionTileText, isSelected && styles.optionTileTextActive]}>
+              {label}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
-function SwatchChip({
+function OptionIcon({
+  type,
   label,
-  selected,
-  onPress,
 }: {
+  type: 'animal' | 'color' | 'outfit' | 'prop' | 'floor' | 'furniture';
   label: string;
-  selected: boolean;
-  onPress: () => void;
 }) {
+  if (type === 'color' || type === 'floor') {
+    return (
+      <View
+        style={[
+          styles.optionColorIcon,
+          { backgroundColor: type === 'floor' ? floorSwatchColor(label) : swatchColor(label) },
+        ]}
+      />
+    );
+  }
+
+  if (type === 'animal') {
+    return (
+      <View style={styles.optionAnimalIcon}>
+        <View style={styles.optionAnimalEarLeft} />
+        <View style={styles.optionAnimalEarRight} />
+        <View style={[styles.optionAnimalHead, { backgroundColor: animalIconColor(label) }]} />
+      </View>
+    );
+  }
+
+  if (type === 'outfit') {
+    return (
+      <View style={styles.optionOutfitIcon}>
+        <View style={styles.optionOutfitNeck} />
+      </View>
+    );
+  }
+
+  if (type === 'prop') {
+    return (
+      <View style={styles.optionPropIcon}>
+        <View style={styles.optionPropLine} />
+      </View>
+    );
+  }
+
   return (
-    <Pressable
-      style={[styles.choiceChip, styles.swatchChoiceChip, selected && styles.choiceChipActive]}
-      onPress={onPress}
-    >
-      <View style={[styles.colorSwatch, { backgroundColor: swatchColor(label) }]} />
-      <Text style={[styles.choiceChipText, selected && styles.choiceChipTextActive]}>{label}</Text>
-    </Pressable>
+    <View style={styles.optionFurnitureIcon}>
+      <View style={styles.optionFurnitureTop} />
+    </View>
   );
 }
 
@@ -1119,6 +1193,19 @@ function floorSwatchColor(label: string) {
   };
 
   return swatches[label] ?? colors.floor;
+}
+
+function animalIconColor(label: string) {
+  const swatches: Record<string, string> = {
+    곰: colors.blue,
+    부엉이: colors.green,
+    고양이: '#9EB58C',
+    토끼: '#EADCC8',
+    여우: colors.coral,
+    햄스터: colors.yellow,
+  };
+
+  return swatches[label] ?? colors.green;
 }
 
 function uniqueLabels(labels: string[]) {
@@ -1837,38 +1924,154 @@ const styles = StyleSheet.create({
     left: spacing.lg,
     position: 'absolute',
   },
-  optionSection: {
-    gap: spacing.sm,
-  },
-  optionChipGrid: {
+  categoryTabs: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
   },
-  choiceChip: {
+  categoryTab: {
+    alignItems: 'center',
     backgroundColor: colors.panel,
     borderColor: colors.line,
     borderRadius: radius.md,
     borderWidth: 1,
+    flexGrow: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
   },
-  choiceChipActive: {
+  categoryTabActive: {
     backgroundColor: colors.ink,
     borderColor: colors.ink,
   },
-  choiceChipText: {
+  categoryTabText: {
     color: colors.ink,
     fontSize: 13,
     fontWeight: '800',
   },
-  choiceChipTextActive: {
+  categoryTabTextActive: {
     color: colors.panel,
   },
-  swatchChoiceChip: {
-    alignItems: 'center',
+  optionTileGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: spacing.sm,
+  },
+  optionTile: {
+    alignItems: 'center',
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    flexGrow: 1,
+    gap: spacing.sm,
+    minWidth: '30%',
+    padding: spacing.md,
+  },
+  optionTileActive: {
+    backgroundColor: '#EEF3EA',
+    borderColor: colors.green,
+  },
+  optionTileText: {
+    color: colors.ink,
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
+  optionTileTextActive: {
+    color: colors.green,
+  },
+  optionColorIcon: {
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: 44,
+    width: 52,
+  },
+  optionAnimalIcon: {
+    alignItems: 'center',
+    height: 48,
+    justifyContent: 'flex-end',
+    position: 'relative',
+    width: 54,
+  },
+  optionAnimalHead: {
+    borderColor: colors.line,
+    borderRadius: 20,
+    borderWidth: 1,
+    height: 40,
+    width: 42,
+  },
+  optionAnimalEarLeft: {
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 14,
+    left: 8,
+    position: 'absolute',
+    top: 4,
+    width: 14,
+  },
+  optionAnimalEarRight: {
+    backgroundColor: colors.panel,
+    borderColor: colors.line,
+    borderRadius: 8,
+    borderWidth: 1,
+    height: 14,
+    position: 'absolute',
+    right: 8,
+    top: 4,
+    width: 14,
+  },
+  optionOutfitIcon: {
+    backgroundColor: '#DDE8EA',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: 46,
+    width: 46,
+  },
+  optionOutfitNeck: {
+    alignSelf: 'center',
+    backgroundColor: colors.panel,
+    borderBottomLeftRadius: 10,
+    borderBottomRightRadius: 10,
+    height: 14,
+    width: 18,
+  },
+  optionPropIcon: {
+    backgroundColor: '#FFFDF8',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: 44,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.sm,
+    width: 48,
+  },
+  optionPropLine: {
+    backgroundColor: colors.green,
+    borderRadius: 2,
+    height: 5,
+    width: '100%',
+  },
+  optionFurnitureIcon: {
+    backgroundColor: '#AEB8BE',
+    borderColor: colors.line,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    height: 34,
+    justifyContent: 'flex-start',
+    marginTop: spacing.sm,
+    width: 56,
+  },
+  optionFurnitureTop: {
+    backgroundColor: '#DDE8EA',
+    borderRadius: radius.sm,
+    height: 18,
+    marginLeft: 8,
+    marginTop: -10,
+    width: 34,
   },
   routineCard: {
     backgroundColor: colors.panel,
